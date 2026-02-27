@@ -1,10 +1,12 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useRepository } from "@/contexts/RepositoryContext";
 import { useTasks } from "@/hooks/useTasks";
 import { useBoardConfig } from "@/hooks/useBoardConfig";
 import { KanbanBoard } from "@/components/board/KanbanBoard";
 import { KanbanColumnSkeleton } from "@/components/ui/Skeleton";
+import { TaskSort, SortOption, sortTasks } from "@/components/ui/TaskSort";
 import Link from "next/link";
 
 export default function BoardPage() {
@@ -17,6 +19,24 @@ export default function BoardPage() {
     owner || "",
     repo || ""
   );
+
+  const [sortOption, setSortOption] = useState<SortOption>("created-newest");
+
+  // Load sort preference from localStorage
+  useEffect(() => {
+    const stored = localStorage.getItem("board-sort-option");
+    if (stored) {
+      setSortOption(stored as SortOption);
+    }
+  }, []);
+
+  // Save sort preference to localStorage
+  useEffect(() => {
+    localStorage.setItem("board-sort-option", sortOption);
+  }, [sortOption]);
+
+  // Apply sorting to tasks
+  const sortedTasks = sortTasks(tasksData?.tasks || [], sortOption);
 
   if (!owner || !repo) {
     return (
@@ -37,11 +57,14 @@ export default function BoardPage() {
   if (tasksLoading || configLoading) {
     return (
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold mb-2">Kanban Board</h1>
-          <p className="text-sm md:text-base text-gray-600">
-            Organize and track your tasks by status
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold mb-2">Kanban Board</h1>
+            <p className="text-sm md:text-base text-gray-600">
+              Organize and track your tasks by status
+            </p>
+          </div>
+          <TaskSort value={sortOption} onChange={setSortOption} />
         </div>
         <div className="flex flex-col md:flex-row gap-4 md:overflow-x-auto md:pb-4 -mx-4 px-4 md:mx-0">
           <KanbanColumnSkeleton />
@@ -63,19 +86,19 @@ export default function BoardPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl md:text-3xl font-bold mb-2">Kanban Board</h1>
-        <p className="text-sm md:text-base text-gray-600">
-          Organize and track your tasks by status
-        </p>
-        <p className="hidden md:block mt-1 text-xs text-gray-500">
-          Scroll horizontally to view all columns
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold mb-2">Kanban Board</h1>
+          <p className="text-sm md:text-base text-gray-600">
+            Organize and track your tasks by status
+          </p>
+        </div>
+        <TaskSort value={sortOption} onChange={setSortOption} />
       </div>
 
       {boardConfig && (
         <KanbanBoard
-          tasks={tasksData?.tasks || []}
+          tasks={sortedTasks}
           boardConfig={boardConfig}
         />
       )}

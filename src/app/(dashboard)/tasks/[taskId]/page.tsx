@@ -79,16 +79,16 @@ export default function TaskDetailPage({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       <Link
         href="/board"
-        className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900"
+        className="inline-flex items-center gap-2 text-sm md:text-base text-gray-600 hover:text-gray-900 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
-        Back to Board
+        <span>Back to Board</span>
       </Link>
 
-      <div className="bg-white rounded-lg border border-gray-200 p-8">
+      <div className="bg-white rounded-lg border border-gray-200 p-4 md:p-6 lg:p-8">
         <TaskDetail task={data.task} />
       </div>
     </div>

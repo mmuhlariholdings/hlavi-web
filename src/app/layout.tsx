@@ -12,7 +12,7 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "Hlavi Web - Task Management",
+  title: "Hlavi - Task Management",
   description: "Visualize and manage your hlavi project tasks",
 };
 

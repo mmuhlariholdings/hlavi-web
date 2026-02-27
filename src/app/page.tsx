@@ -172,6 +172,94 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* CLI Integration - Coming Soon */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-blue-600 via-purple-600 to-blue-700 text-white relative overflow-hidden">
+        <div className="absolute inset-0 bg-grid-white/[0.05] bg-[size:20px_20px]" />
+        <div className="max-w-7xl mx-auto relative">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-full text-sm font-semibold mb-6">
+              <Zap className="w-4 h-4" />
+              Coming Soon
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+              Autonomous Task Execution with Hlavi CLI
+            </h2>
+            <p className="text-xl text-blue-100 max-w-3xl mx-auto">
+              Integrate AI agents directly into your workflow. Let autonomous agents execute your tasks from start to finish.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 mb-12">
+            {/* Feature 1: Autonomous Agents */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
+              <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mb-4">
+                <Zap className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold mb-3">AI-Powered Execution</h3>
+              <p className="text-blue-100 mb-4">
+                Select your preferred AI model or run in auto mode. Agents autonomously work through tasks, checking off acceptance criteria as they complete each requirement.
+              </p>
+              <div className="bg-gray-900/50 rounded-lg p-4 font-mono text-sm">
+                <span className="text-blue-300">$</span> hlavi agent --task HLA1 --model auto
+              </div>
+            </div>
+
+            {/* Feature 2: Repository Integration */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
+              <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mb-4">
+                <GitBranch className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold mb-3">Seamless Repo Integration</h3>
+              <p className="text-blue-100 mb-4">
+                Initialize Hlavi in any existing project with a single command. Create tasks that directly modify your repository with every change tracked in git.
+              </p>
+              <div className="bg-gray-900/50 rounded-lg p-4 font-mono text-sm">
+                <span className="text-blue-300">$</span> hlavi init
+                <br />
+                <span className="text-green-400">✓</span> Created .hlavi/ directory
+              </div>
+            </div>
+          </div>
+
+          {/* Use Cases */}
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
+            <h3 className="text-2xl font-bold mb-6 text-center">From Task Manager to Development Team</h3>
+            <div className="grid md:grid-cols-3 gap-6">
+              <div>
+                <div className="text-3xl mb-2">📋</div>
+                <h4 className="font-bold mb-2">Basic Task Management</h4>
+                <p className="text-sm text-blue-100">
+                  Use Hlavi CLI for simple task tracking and manual execution across your team.
+                </p>
+              </div>
+              <div>
+                <div className="text-3xl mb-2">🔄</div>
+                <h4 className="font-bold mb-2">Automated Workflows</h4>
+                <p className="text-sm text-blue-100">
+                  Let agents handle repetitive tasks like testing, refactoring, and documentation.
+                </p>
+              </div>
+              <div>
+                <div className="text-3xl mb-2">🚀</div>
+                <h4 className="font-bold mb-2">Full Development Team</h4>
+                <p className="text-sm text-blue-100">
+                  Deploy to Vercel or similar platforms and watch agents build features in real-time.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="text-center mt-12">
+            <p className="text-lg text-blue-100 mb-4">
+              Imagine creating a task for your Next.js app, and watching an AI agent implement it, run tests, and deploy—all while you track progress in real-time.
+            </p>
+            <p className="text-sm text-blue-200">
+              CLI integration coming soon. Stay tuned for autonomous task execution.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* How It Works */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-900 text-white">
         <div className="max-w-7xl mx-auto">

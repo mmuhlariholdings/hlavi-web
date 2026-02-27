@@ -48,7 +48,7 @@ export function KanbanBoard({ tasks, boardConfig }: KanbanBoardProps) {
   };
 
   return (
-    <div className="flex flex-col md:flex-row gap-4 md:overflow-x-auto md:pb-4 -mx-4 px-4 md:mx-0">
+    <div className="flex flex-col md:flex-row gap-4 md:overflow-x-auto md:pb-4 -mx-4 px-4 md:mx-0 md:px-0">
       {boardConfig.columns.map((column) => {
         const columnTasks = tasks.filter(
           (task) => task.status === column.status

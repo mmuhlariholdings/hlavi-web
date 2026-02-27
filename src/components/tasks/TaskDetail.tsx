@@ -26,7 +26,7 @@ const STATUS_OPTIONS: { value: TaskStatus; label: string }[] = [
 ];
 
 export function TaskDetail({ task }: TaskDetailProps) {
-  const { owner, repo } = useRepository();
+  const { owner, repo, branch } = useRepository();
   const updateTask = useUpdateTask();
   const addCriteria = useAddAcceptanceCriteria();
   const [isEditing, setIsEditing] = useState(false);
@@ -50,6 +50,7 @@ export function TaskDetail({ task }: TaskDetailProps) {
       await updateTask.mutateAsync({
         owner,
         repo,
+        branch,
         taskId: task.id,
         updates: {
           title: editedTitle,
@@ -86,6 +87,7 @@ export function TaskDetail({ task }: TaskDetailProps) {
       await addCriteria.mutateAsync({
         owner,
         repo,
+        branch,
         taskId: task.id,
         description: newCriteriaDescription.trim(),
       });

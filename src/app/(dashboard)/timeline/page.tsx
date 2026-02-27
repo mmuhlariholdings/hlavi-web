@@ -9,8 +9,8 @@ import { TaskSort, SortOption, sortTasks } from "@/components/ui/TaskSort";
 import Link from "next/link";
 
 export default function TimelinePage() {
-  const { owner, repo } = useRepository();
-  const { data, isLoading, error } = useTasks(owner || "", repo || "");
+  const { owner, repo, branch } = useRepository();
+  const { data, isLoading, error } = useTasks(owner || "", repo || "", branch);
 
   const [sortOption, setSortOption] = useState<SortOption>("created-newest");
 

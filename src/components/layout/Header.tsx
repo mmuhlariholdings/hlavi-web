@@ -11,7 +11,7 @@ export function Header() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [createModalOpen, setCreateModalOpen] = useState(false);
-  const { owner, repo } = useRepository();
+  const { owner, repo, branch } = useRepository();
 
   const navItems = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },

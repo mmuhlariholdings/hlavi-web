@@ -17,7 +17,7 @@ export function AcceptanceCriteriaList({
   taskId,
   criteria,
 }: AcceptanceCriteriaListProps) {
-  const { owner, repo } = useRepository();
+  const { owner, repo, branch } = useRepository();
   const toggleCriteria = useToggleAcceptanceCriteria();
   const deleteCriteria = useDeleteAcceptanceCriteria();
 
@@ -27,6 +27,7 @@ export function AcceptanceCriteriaList({
     toggleCriteria.mutate({
       owner,
       repo,
+      branch,
       taskId,
       criteriaId,
     });
@@ -41,6 +42,7 @@ export function AcceptanceCriteriaList({
       deleteCriteria.mutate({
         owner,
         repo,
+        branch,
         taskId,
         criteriaId,
       });

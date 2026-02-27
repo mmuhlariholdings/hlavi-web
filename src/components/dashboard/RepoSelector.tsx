@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRepositories } from "@/hooks/useRepositories";
 import { useRepository } from "@/contexts/RepositoryContext";
 import { useInitializeHlavi } from "@/hooks/useInitializeHlavi";
+import { BranchSelector } from "./BranchSelector";
 import { GitBranch, Loader2, AlertCircle, CheckCircle2, Sparkles } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
@@ -178,20 +179,24 @@ export function RepoSelector() {
       )}
 
       {selectedRepo && hlaviCheck?.hasHlavi && (
-        <div className="flex items-start gap-3 p-4 bg-green-50 rounded-lg border border-green-200">
-          <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-          <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <GitBranch className="w-4 h-4 text-gray-500" />
-              <h3 className="font-medium">{selectedRepo.full_name}</h3>
+        <>
+          <div className="flex items-start gap-3 p-4 bg-green-50 rounded-lg border border-green-200">
+            <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <GitBranch className="w-4 h-4 text-gray-500" />
+                <h3 className="font-medium">{selectedRepo.full_name}</h3>
+              </div>
+              {selectedRepo.description && (
+                <p className="text-sm text-gray-600 mt-1">
+                  {selectedRepo.description}
+                </p>
+              )}
             </div>
-            {selectedRepo.description && (
-              <p className="text-sm text-gray-600 mt-1">
-                {selectedRepo.description}
-              </p>
-            )}
           </div>
-        </div>
+
+          <BranchSelector />
+        </>
       )}
     </div>
   );

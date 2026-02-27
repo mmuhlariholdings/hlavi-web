@@ -11,8 +11,8 @@ import { format, isWithinInterval, isSameDay, startOfWeek, endOfWeek, isBefore, 
 import Link from "next/link";
 
 export default function AgendaPage() {
-  const { owner, repo } = useRepository();
-  const { data, isLoading, error } = useTasks(owner || "", repo || "");
+  const { owner, repo, branch } = useRepository();
+  const { data, isLoading, error } = useTasks(owner || "", repo || "", branch);
   const [selectedDate, setSelectedDate] = useState(new Date());
 
   // Filter tasks based on selected date

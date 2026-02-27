@@ -7,8 +7,8 @@ import { CheckCircle2, Clock, AlertCircle, BarChart3 } from "lucide-react";
 import { StatsCardSkeleton } from "@/components/ui/Skeleton";
 
 export default function DashboardPage() {
-  const { owner, repo } = useRepository();
-  const { data, isLoading } = useTasks(owner || "", repo || "");
+  const { owner, repo, branch } = useRepository();
+  const { data, isLoading } = useTasks(owner || "", repo || "", branch);
 
   const tasks = data?.tasks || [];
 

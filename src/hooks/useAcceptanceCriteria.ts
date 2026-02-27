@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 interface AddCriteriaParams {
   owner: string;
   repo: string;
+  branch?: string | null;
   taskId: string;
   description: string;
 }
@@ -12,6 +13,7 @@ interface AddCriteriaParams {
 interface ToggleCriteriaParams {
   owner: string;
   repo: string;
+  branch?: string | null;
   taskId: string;
   criteriaId: number;
 }
@@ -19,6 +21,7 @@ interface ToggleCriteriaParams {
 interface DeleteCriteriaParams {
   owner: string;
   repo: string;
+  branch?: string | null;
   taskId: string;
   criteriaId: number;
 }
@@ -35,6 +38,7 @@ export function useAddAcceptanceCriteria() {
     mutationFn: async ({
       owner,
       repo,
+      branch,
       taskId,
       description,
     }: AddCriteriaParams): Promise<TaskResponse> => {
@@ -45,7 +49,7 @@ export function useAddAcceptanceCriteria() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ owner, repo, description }),
+          body: JSON.stringify({ owner, repo, branch, description }),
         }
       );
 
@@ -59,10 +63,10 @@ export function useAddAcceptanceCriteria() {
     onSuccess: (data, variables) => {
       // Invalidate both queries
       queryClient.invalidateQueries({
-        queryKey: ["task", variables.owner, variables.repo, variables.taskId],
+        queryKey: ["task", variables.owner, variables.repo, variables.taskId, variables.branch],
       });
       queryClient.invalidateQueries({
-        queryKey: ["tasks", variables.owner, variables.repo],
+        queryKey: ["tasks", variables.owner, variables.repo, variables.branch],
       });
 
       toast.success("Acceptance criteria added");
@@ -81,6 +85,7 @@ export function useToggleAcceptanceCriteria() {
     mutationFn: async ({
       owner,
       repo,
+      branch,
       taskId,
       criteriaId,
     }: ToggleCriteriaParams): Promise<TaskResponse> => {
@@ -91,7 +96,7 @@ export function useToggleAcceptanceCriteria() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ owner, repo }),
+          body: JSON.stringify({ owner, repo, branch }),
         }
       );
 
@@ -107,7 +112,7 @@ export function useToggleAcceptanceCriteria() {
     onMutate: async (variables) => {
       // Optimistically update
       await queryClient.cancelQueries({
-        queryKey: ["task", variables.owner, variables.repo, variables.taskId],
+        queryKey: ["task", variables.owner, variables.repo, variables.taskId, variables.branch],
       });
 
       const previousTask = queryClient.getQueryData([
@@ -115,10 +120,11 @@ export function useToggleAcceptanceCriteria() {
         variables.owner,
         variables.repo,
         variables.taskId,
+        variables.branch,
       ]);
 
       queryClient.setQueryData(
-        ["task", variables.owner, variables.repo, variables.taskId],
+        ["task", variables.owner, variables.repo, variables.taskId, variables.branch],
         (old: any) => {
           if (!old?.task) return old;
           return {
@@ -145,10 +151,10 @@ export function useToggleAcceptanceCriteria() {
     },
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ["task", variables.owner, variables.repo, variables.taskId],
+        queryKey: ["task", variables.owner, variables.repo, variables.taskId, variables.branch],
       });
       queryClient.invalidateQueries({
-        queryKey: ["tasks", variables.owner, variables.repo],
+        queryKey: ["tasks", variables.owner, variables.repo, variables.branch],
       });
 
       // Find the toggled criteria to show appropriate message
@@ -167,7 +173,7 @@ export function useToggleAcceptanceCriteria() {
     onError: (error: Error, variables, context: any) => {
       if (context?.previousTask) {
         queryClient.setQueryData(
-          ["task", variables.owner, variables.repo, variables.taskId],
+          ["task", variables.owner, variables.repo, variables.taskId, variables.branch],
           context.previousTask
         );
       }
@@ -184,11 +190,17 @@ export function useDeleteAcceptanceCriteria() {
     mutationFn: async ({
       owner,
       repo,
+      branch,
       taskId,
       criteriaId,
     }: DeleteCriteriaParams): Promise<TaskResponse> => {
+      const params = new URLSearchParams({
+        owner,
+        repo,
+        ...(branch && { branch }),
+      });
       const response = await fetch(
-        `/api/github/tasks/${taskId}/acceptance-criteria/${criteriaId}?owner=${encodeURIComponent(owner)}&repo=${encodeURIComponent(repo)}`,
+        `/api/github/tasks/${taskId}/acceptance-criteria/${criteriaId}?${params}`,
         {
           method: "DELETE",
         }
@@ -203,10 +215,10 @@ export function useDeleteAcceptanceCriteria() {
     },
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ["task", variables.owner, variables.repo, variables.taskId],
+        queryKey: ["task", variables.owner, variables.repo, variables.taskId, variables.branch],
       });
       queryClient.invalidateQueries({
-        queryKey: ["tasks", variables.owner, variables.repo],
+        queryKey: ["tasks", variables.owner, variables.repo, variables.branch],
       });
 
       toast.success("Acceptance criteria deleted");

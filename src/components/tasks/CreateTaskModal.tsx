@@ -11,7 +11,7 @@ interface CreateTaskModalProps {
 }
 
 export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
-  const { owner, repo } = useRepository();
+  const { owner, repo, branch } = useRepository();
   const createTask = useCreateTask();
   const [formData, setFormData] = useState({
     title: "",
@@ -42,6 +42,7 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
       await createTask.mutateAsync({
         owner,
         repo,
+        branch,
         title: formData.title,
         description: formData.description || undefined,
         status: formData.status,

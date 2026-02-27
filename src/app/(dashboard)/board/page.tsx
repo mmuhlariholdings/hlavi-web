@@ -10,14 +10,16 @@ import { TaskSort, SortOption, sortTasks } from "@/components/ui/TaskSort";
 import Link from "next/link";
 
 export default function BoardPage() {
-  const { owner, repo } = useRepository();
+  const { owner, repo, branch } = useRepository();
   const { data: tasksData, isLoading: tasksLoading, error: tasksError } = useTasks(
     owner || "",
-    repo || ""
+    repo || "",
+    branch
   );
   const { data: boardConfig, isLoading: configLoading } = useBoardConfig(
     owner || "",
-    repo || ""
+    repo || "",
+    branch
   );
 
   const [sortOption, setSortOption] = useState<SortOption>("created-newest");

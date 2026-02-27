@@ -14,12 +14,13 @@ export default function TaskDetailPage({
   params: Promise<{ taskId: string }>;
 }) {
   const { taskId } = use(params);
-  const { owner, repo } = useRepository();
+  const { owner, repo, branch } = useRepository();
   const router = useRouter();
   const { data, isLoading, error } = useTask(
     owner || "",
     repo || "",
-    taskId
+    taskId,
+    branch
   );
 
   if (!owner || !repo) {

@@ -6,6 +6,7 @@ import { useTasks } from "@/hooks/useTasks";
 import { TimelineView } from "@/components/timeline/TimelineView";
 import { TimelineSkeleton } from "@/components/ui/Skeleton";
 import { TaskSort, SortOption, sortTasks } from "@/components/ui/TaskSort";
+import { BranchInitializer } from "@/components/dashboard/BranchInitializer";
 import Link from "next/link";
 
 export default function TimelinePage() {
@@ -73,6 +74,8 @@ export default function TimelinePage() {
 
   return (
     <div className="space-y-6">
+      <BranchInitializer />
+
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold mb-2">Timeline View</h1>

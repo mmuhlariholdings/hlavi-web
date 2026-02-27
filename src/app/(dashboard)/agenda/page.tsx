@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { PlayCircle, CheckCircle2, AlertTriangle, Calendar, Clock } from "lucide-react";
 import { format, isWithinInterval, isSameDay, startOfWeek, endOfWeek, isBefore, startOfDay } from "date-fns";
 import Link from "next/link";
+import { BranchInitializer } from "@/components/dashboard/BranchInitializer";
 
 export default function AgendaPage() {
   const { owner, repo, branch } = useRepository();
@@ -119,6 +120,8 @@ export default function AgendaPage() {
 
   return (
     <div className="space-y-6">
+      <BranchInitializer />
+
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold mb-2">Agenda</h1>

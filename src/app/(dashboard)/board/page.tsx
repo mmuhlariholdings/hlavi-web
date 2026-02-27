@@ -8,6 +8,7 @@ import { KanbanBoard } from "@/components/board/KanbanBoard";
 import { KanbanColumnSkeleton } from "@/components/ui/Skeleton";
 import { TaskSort, SortOption, sortTasks } from "@/components/ui/TaskSort";
 import Link from "next/link";
+import { BranchInitializer } from "@/components/dashboard/BranchInitializer";
 
 export default function BoardPage() {
   const { owner, repo, branch } = useRepository();
@@ -88,6 +89,8 @@ export default function BoardPage() {
 
   return (
     <div className="space-y-6">
+      <BranchInitializer />
+
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold mb-2">Kanban Board</h1>

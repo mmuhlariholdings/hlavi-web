@@ -1,6 +1,7 @@
 "use client";
 
 import { RepoSelector } from "@/components/dashboard/RepoSelector";
+import { BranchInitializer } from "@/components/dashboard/BranchInitializer";
 import { useRepository } from "@/contexts/RepositoryContext";
 import { useTasks } from "@/hooks/useTasks";
 import { CheckCircle2, Clock, AlertCircle, BarChart3 } from "lucide-react";
@@ -20,6 +21,8 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6 md:space-y-8">
+      <BranchInitializer />
+
       <div>
         <h1 className="text-2xl md:text-3xl font-bold mb-2">Dashboard</h1>
         <p className="text-sm md:text-base text-gray-600">

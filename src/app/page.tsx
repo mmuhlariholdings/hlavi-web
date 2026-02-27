@@ -82,8 +82,8 @@ export default function LandingPage() {
 
           <div className="grid md:grid-cols-3 gap-8">
             {/* Feature 1 */}
-            <div className="p-8 rounded-2xl border border-gray-200 hover:border-blue-300 transition-colors bg-gradient-to-br from-white to-gray-50">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+            <div className="p-8 rounded-2xl border border-gray-200 hover:border-blue-300 transition-colors bg-gradient-to-br from-white to-gray-50 text-center md:text-left">
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4 mx-auto md:mx-0">
                 <Shield className="w-6 h-6 text-blue-600" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">
@@ -96,8 +96,8 @@ export default function LandingPage() {
             </div>
 
             {/* Feature 2 */}
-            <div className="p-8 rounded-2xl border border-gray-200 hover:border-blue-300 transition-colors bg-gradient-to-br from-white to-gray-50">
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+            <div className="p-8 rounded-2xl border border-gray-200 hover:border-blue-300 transition-colors bg-gradient-to-br from-white to-gray-50 text-center md:text-left">
+              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4 mx-auto md:mx-0">
                 <GitBranch className="w-6 h-6 text-green-600" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">
@@ -109,8 +109,8 @@ export default function LandingPage() {
             </div>
 
             {/* Feature 3 */}
-            <div className="p-8 rounded-2xl border border-gray-200 hover:border-blue-300 transition-colors bg-gradient-to-br from-white to-gray-50">
-              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+            <div className="p-8 rounded-2xl border border-gray-200 hover:border-blue-300 transition-colors bg-gradient-to-br from-white to-gray-50 text-center md:text-left">
+              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4 mx-auto md:mx-0">
                 <Zap className="w-6 h-6 text-purple-600" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">
@@ -138,8 +138,8 @@ export default function LandingPage() {
 
           <div className="grid md:grid-cols-3 gap-6">
             {/* Timeline View */}
-            <div className="group relative overflow-hidden rounded-xl border border-gray-200 bg-white p-6 hover:border-blue-300 transition-all hover:shadow-xl">
-              <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-4">
+            <div className="group relative overflow-hidden rounded-xl border border-gray-200 bg-white p-6 hover:border-blue-300 transition-all hover:shadow-xl text-center md:text-left">
+              <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-4 mx-auto md:mx-0">
                 <BarChart3 className="w-6 h-6 text-orange-600" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">Timeline View</h3>
@@ -149,8 +149,8 @@ export default function LandingPage() {
             </div>
 
             {/* Kanban Board */}
-            <div className="group relative overflow-hidden rounded-xl border border-gray-200 bg-white p-6 hover:border-blue-300 transition-all hover:shadow-xl">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+            <div className="group relative overflow-hidden rounded-xl border border-gray-200 bg-white p-6 hover:border-blue-300 transition-all hover:shadow-xl text-center md:text-left">
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4 mx-auto md:mx-0">
                 <Kanban className="w-6 h-6 text-blue-600" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">Kanban Board</h3>
@@ -160,8 +160,8 @@ export default function LandingPage() {
             </div>
 
             {/* Agenda View */}
-            <div className="group relative overflow-hidden rounded-xl border border-gray-200 bg-white p-6 hover:border-blue-300 transition-all hover:shadow-xl">
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+            <div className="group relative overflow-hidden rounded-xl border border-gray-200 bg-white p-6 hover:border-blue-300 transition-all hover:shadow-xl text-center md:text-left">
+              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4 mx-auto md:mx-0">
                 <Calendar className="w-6 h-6 text-green-600" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">Agenda View</h3>
@@ -192,29 +192,29 @@ export default function LandingPage() {
 
           <div className="grid md:grid-cols-2 gap-8 mb-12">
             {/* Feature 1: Autonomous Agents */}
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 flex flex-col">
-              <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mb-4">
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 flex flex-col text-center md:text-left">
+              <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mb-4 mx-auto md:mx-0">
                 <Zap className="w-6 h-6 text-white" />
               </div>
               <h3 className="text-2xl font-bold mb-3">AI-Powered Execution</h3>
               <p className="text-blue-100 mb-4 flex-1">
                 Select your preferred AI model or run in auto mode. Agents autonomously work through tasks—from coding to research to content creation—checking off acceptance criteria as they complete each requirement.
               </p>
-              <div className="bg-gray-900/50 rounded-lg p-4 font-mono text-sm">
+              <div className="bg-gray-900/50 rounded-lg p-4 font-mono text-sm text-left">
                 <span className="text-blue-300">$</span> hlavi agent --task HLA1 --model auto
               </div>
             </div>
 
             {/* Feature 2: Repository Integration */}
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 flex flex-col">
-              <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mb-4">
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 flex flex-col text-center md:text-left">
+              <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mb-4 mx-auto md:mx-0">
                 <GitBranch className="w-6 h-6 text-white" />
               </div>
               <h3 className="text-2xl font-bold mb-3">Seamless Repo Integration</h3>
               <p className="text-blue-100 mb-4 flex-1">
                 Initialize Hlavi in any existing project—code repositories, research papers, documentation sites, or content projects. Create tasks that directly modify files with every change tracked in git.
               </p>
-              <div className="bg-gray-900/50 rounded-lg p-4 font-mono text-sm">
+              <div className="bg-gray-900/50 rounded-lg p-4 font-mono text-sm text-left">
                 <span className="text-blue-300">$</span> hlavi init
               </div>
             </div>
@@ -224,28 +224,28 @@ export default function LandingPage() {
           <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
             <h3 className="text-2xl font-bold mb-6 text-center">Endless Possibilities for Automation</h3>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div>
+              <div className="text-center md:text-left">
                 <div className="text-3xl mb-2">💻</div>
                 <h4 className="font-bold mb-2">Software Development</h4>
                 <p className="text-sm text-blue-100">
                   Build features, fix bugs, write tests, and deploy automatically with agent-driven development.
                 </p>
               </div>
-              <div>
+              <div className="text-center md:text-left">
                 <div className="text-3xl mb-2">📊</div>
                 <h4 className="font-bold mb-2">Research & Analysis</h4>
                 <p className="text-sm text-blue-100">
                   Automate data collection, analysis, report generation, and literature reviews.
                 </p>
               </div>
-              <div>
+              <div className="text-center md:text-left">
                 <div className="text-3xl mb-2">✍️</div>
                 <h4 className="font-bold mb-2">Content Creation</h4>
                 <p className="text-sm text-blue-100">
                   Generate documentation, blog posts, marketing copy, and maintain content calendars.
                 </p>
               </div>
-              <div>
+              <div className="text-center md:text-left">
                 <div className="text-3xl mb-2">🔧</div>
                 <h4 className="font-bold mb-2">DevOps & Infrastructure</h4>
                 <p className="text-sm text-blue-100">
@@ -355,17 +355,17 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="border-t border-gray-200 py-12 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="flex items-center gap-2">
+          <div className="flex flex-col md:flex-row md:justify-between items-center gap-4 text-center md:text-left">
+            <div className="flex items-center gap-2 md:flex-1">
               <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-lg">H</span>
               </div>
               <span className="text-xl font-bold text-gray-900">Hlavi</span>
             </div>
-            <p className="text-gray-600 text-sm">
+            <p className="text-gray-600 text-sm md:flex-1">
               Built with ❤️ for developers who value simplicity and control
             </p>
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-6 md:flex-1 md:justify-end">
               <a href="https://github.com" className="text-gray-600 hover:text-gray-900 transition-colors">
                 <GitHubLogo className="w-5 h-5" />
               </a>

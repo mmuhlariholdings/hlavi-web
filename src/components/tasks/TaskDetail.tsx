@@ -5,8 +5,9 @@ import { Task, TaskStatus } from "@/lib/types";
 import { TaskStatusBadge } from "./TaskStatusBadge";
 import { AcceptanceCriteriaList } from "./AcceptanceCriteriaList";
 import { formatDate } from "@/lib/utils";
-import { Calendar, Clock, Edit2, X, Save } from "lucide-react";
+import { Calendar, Clock, Edit2, X, Save, Plus } from "lucide-react";
 import { useUpdateTask } from "@/hooks/useUpdateTask";
+import { useAddAcceptanceCriteria } from "@/hooks/useAcceptanceCriteria";
 import { useRepository } from "@/contexts/RepositoryContext";
 import { format } from "date-fns";
 
@@ -27,7 +28,9 @@ const STATUS_OPTIONS: { value: TaskStatus; label: string }[] = [
 export function TaskDetail({ task }: TaskDetailProps) {
   const { owner, repo } = useRepository();
   const updateTask = useUpdateTask();
+  const addCriteria = useAddAcceptanceCriteria();
   const [isEditing, setIsEditing] = useState(false);
+  const [newCriteriaDescription, setNewCriteriaDescription] = useState("");
 
   // Edit state
   const [editedTitle, setEditedTitle] = useState(task.title);
@@ -73,6 +76,23 @@ export function TaskDetail({ task }: TaskDetailProps) {
       task.end_date ? format(new Date(task.end_date), "yyyy-MM-dd") : ""
     );
     setIsEditing(false);
+  };
+
+  const handleAddCriteria = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!owner || !repo || !newCriteriaDescription.trim()) return;
+
+    try {
+      await addCriteria.mutateAsync({
+        owner,
+        repo,
+        taskId: task.id,
+        description: newCriteriaDescription.trim(),
+      });
+      setNewCriteriaDescription("");
+    } catch (error) {
+      console.error("Failed to add acceptance criteria:", error);
+    }
   };
 
   return (
@@ -234,14 +254,35 @@ export function TaskDetail({ task }: TaskDetailProps) {
       </div>
 
       {/* Acceptance Criteria */}
-      {task.acceptance_criteria.length > 0 && (
-        <div>
-          <h2 className="text-base md:text-lg font-semibold mb-3">
-            Acceptance Criteria ({task.acceptance_criteria.filter(ac => ac.completed).length}/{task.acceptance_criteria.length})
-          </h2>
-          <AcceptanceCriteriaList criteria={task.acceptance_criteria} />
-        </div>
-      )}
+      <div>
+        <h2 className="text-base md:text-lg font-semibold mb-3">
+          Acceptance Criteria ({task.acceptance_criteria.filter(ac => ac.completed).length}/{task.acceptance_criteria.length})
+        </h2>
+
+        <AcceptanceCriteriaList taskId={task.id} criteria={task.acceptance_criteria} />
+
+        {/* Add New Acceptance Criteria Form */}
+        <form onSubmit={handleAddCriteria} className="mt-4">
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={newCriteriaDescription}
+              onChange={(e) => setNewCriteriaDescription(e.target.value)}
+              placeholder="Add new acceptance criteria..."
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              disabled={addCriteria.isPending}
+            />
+            <button
+              type="submit"
+              disabled={addCriteria.isPending || !newCriteriaDescription.trim()}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2 text-sm font-medium"
+            >
+              <Plus className="w-4 h-4" />
+              Add
+            </button>
+          </div>
+        </form>
+      </div>
 
       {/* Agent Assignment Notice */}
       {task.agent_assigned && (

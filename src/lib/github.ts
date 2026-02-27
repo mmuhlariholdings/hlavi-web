@@ -140,4 +140,81 @@ export class GitHubService {
 
     return updatedTask;
   }
+
+  async addAcceptanceCriteria(
+    owner: string,
+    repo: string,
+    taskId: string,
+    description: string
+  ): Promise<Task> {
+    const currentTask = await this.getTask(owner, repo, taskId);
+
+    // Find next ID
+    const nextId =
+      currentTask.acceptance_criteria.length > 0
+        ? Math.max(...currentTask.acceptance_criteria.map((ac) => ac.id)) + 1
+        : 1;
+
+    // Add new acceptance criteria
+    const newCriteria = {
+      id: nextId,
+      description,
+      completed: false,
+      created_at: new Date().toISOString(),
+      completed_at: null,
+    };
+
+    const updatedTask = {
+      ...currentTask,
+      acceptance_criteria: [...currentTask.acceptance_criteria, newCriteria],
+      updated_at: new Date().toISOString(),
+    };
+
+    // Update the task
+    return this.updateTask(owner, repo, taskId, {
+      acceptance_criteria: updatedTask.acceptance_criteria,
+    });
+  }
+
+  async toggleAcceptanceCriteria(
+    owner: string,
+    repo: string,
+    taskId: string,
+    criteriaId: number
+  ): Promise<Task> {
+    const currentTask = await this.getTask(owner, repo, taskId);
+
+    // Toggle the specific criteria
+    const updatedCriteria = currentTask.acceptance_criteria.map((ac) =>
+      ac.id === criteriaId
+        ? {
+            ...ac,
+            completed: !ac.completed,
+            completed_at: !ac.completed ? new Date().toISOString() : null,
+          }
+        : ac
+    );
+
+    return this.updateTask(owner, repo, taskId, {
+      acceptance_criteria: updatedCriteria,
+    });
+  }
+
+  async deleteAcceptanceCriteria(
+    owner: string,
+    repo: string,
+    taskId: string,
+    criteriaId: number
+  ): Promise<Task> {
+    const currentTask = await this.getTask(owner, repo, taskId);
+
+    // Remove the specific criteria
+    const updatedCriteria = currentTask.acceptance_criteria.filter(
+      (ac) => ac.id !== criteriaId
+    );
+
+    return this.updateTask(owner, repo, taskId, {
+      acceptance_criteria: updatedCriteria,
+    });
+  }
 }

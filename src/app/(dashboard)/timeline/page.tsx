@@ -45,9 +45,12 @@ export default function TimelinePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold mb-2">Timeline View</h1>
-        <p className="text-gray-600">
+        <h1 className="text-2xl md:text-3xl font-bold mb-2">Timeline View</h1>
+        <p className="text-sm md:text-base text-gray-600">
           Gantt chart visualization of tasks with dates
+          <span className="md:hidden block mt-1 text-xs text-gray-500">
+            Swipe horizontally to view the full timeline
+          </span>
         </p>
       </div>
 

@@ -10,7 +10,7 @@ interface KanbanBoardProps {
 
 export function KanbanBoard({ tasks, boardConfig }: KanbanBoardProps) {
   return (
-    <div className="flex gap-4 overflow-x-auto pb-4">
+    <div className="flex flex-col md:flex-row gap-4 md:overflow-x-auto md:pb-4 -mx-4 px-4 md:mx-0">
       {boardConfig.columns.map((column) => {
         const columnTasks = tasks.filter(
           (task) => task.status === column.status

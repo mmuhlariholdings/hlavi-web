@@ -8,7 +8,7 @@ interface KanbanColumnProps {
 
 export function KanbanColumn({ column, tasks }: KanbanColumnProps) {
   return (
-    <div className="flex-shrink-0 w-80">
+    <div className="w-full md:flex-shrink-0 md:w-80">
       <div className="bg-gray-100 rounded-lg p-4">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold text-lg">{column.name}</h3>

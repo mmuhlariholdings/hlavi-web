@@ -109,7 +109,9 @@ export function TimelineView({ tasks }: TimelineViewProps) {
 
   return (
     <div className="space-y-4">
-      <div ref={timelineRef} className="border rounded-lg p-4 bg-white" />
+      <div className="border rounded-lg overflow-hidden bg-white">
+        <div ref={timelineRef} className="w-full overflow-x-auto p-2 md:p-4" />
+      </div>
       <style jsx global>{`
         .vis-item.status-new {
           background-color: #e5e7eb;

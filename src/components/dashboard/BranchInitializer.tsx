@@ -48,7 +48,7 @@ export function BranchInitializer() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto mt-12">
+    <div>
       <div className="bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-6">
         <div className="flex items-start gap-4">
           <Sparkles className="w-6 h-6 text-blue-600 flex-shrink-0 mt-0.5" />

@@ -52,7 +52,7 @@ export default function TimelinePage() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold mb-2">Timeline View</h1>
+            <h1 className="text-2xl md:text-3xl font-bold mb-2">Timeline</h1>
             <p className="text-sm md:text-base text-gray-600">
               Gantt chart visualization of tasks with dates
             </p>
@@ -78,7 +78,7 @@ export default function TimelinePage() {
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold mb-2">Timeline View</h1>
+          <h1 className="text-2xl md:text-3xl font-bold mb-2">Timeline</h1>
           <p className="text-sm md:text-base text-gray-600">
             Gantt chart visualization of tasks with dates
             <span className="md:hidden block mt-1 text-xs text-gray-500">

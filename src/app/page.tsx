@@ -142,7 +142,7 @@ export default function LandingPage() {
               <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-4 mx-auto md:mx-0">
                 <BarChart3 className="w-6 h-6 text-orange-600" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Timeline View</h3>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Timeline</h3>
               <p className="text-gray-600">
                 Gantt chart visualization with drag-and-drop. See your project timeline at a glance.
               </p>

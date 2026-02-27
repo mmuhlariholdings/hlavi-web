@@ -13,19 +13,8 @@ export async function GET(request: NextRequest) {
     const github = new GitHubService(session.accessToken);
     const repos = await github.getUserRepositories();
 
-    // Filter repos with .hlavi directory
-    const hlaviRepos = [];
-    for (const repo of repos) {
-      const hasHlavi = await github.checkHlaviDirectory(
-        repo.owner.login,
-        repo.name
-      );
-      if (hasHlavi) {
-        hlaviRepos.push(repo);
-      }
-    }
-
-    return NextResponse.json({ repositories: hlaviRepos });
+    // Return all repos - we'll check for .hlavi lazily when selected
+    return NextResponse.json({ repositories: repos });
   } catch (error) {
     console.error("Failed to fetch repositories:", error);
     return NextResponse.json(

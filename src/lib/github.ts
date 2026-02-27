@@ -217,4 +217,71 @@ export class GitHubService {
       acceptance_criteria: updatedCriteria,
     });
   }
+
+  async initializeHlavi(owner: string, repo: string): Promise<void> {
+    // Default board configuration
+    const defaultBoard: Board = {
+      config: {
+        name: "Default Board",
+        columns: [
+          { name: "New", status: "new", agent_enabled: false, agent_mode: null },
+          { name: "Open", status: "open", agent_enabled: false, agent_mode: null },
+          { name: "In Progress", status: "inprogress", agent_enabled: false, agent_mode: null },
+          { name: "Review", status: "review", agent_enabled: false, agent_mode: null },
+          { name: "Done", status: "done", agent_enabled: false, agent_mode: null },
+        ],
+      },
+      tasks: {},
+      next_task_number: 1,
+    };
+
+    // README content
+    const readmeContent = `# Hlavi Task Management
+
+This directory contains your Hlavi task management files.
+
+## Structure
+
+- \`tasks/\` - Individual task files stored as JSON
+- \`board.json\` - Board configuration for kanban view
+
+## Usage
+
+Use the Hlavi web interface or CLI to manage your tasks.
+
+Learn more at: https://mmuhlariholdings.github.io/hlavi/
+`;
+
+    try {
+      // Create board.json
+      await this.octokit.repos.createOrUpdateFileContents({
+        owner,
+        repo,
+        path: ".hlavi/board.json",
+        message: "Initialize Hlavi: Add board configuration",
+        content: Buffer.from(JSON.stringify(defaultBoard, null, 2)).toString("base64"),
+      });
+
+      // Create README.md
+      await this.octokit.repos.createOrUpdateFileContents({
+        owner,
+        repo,
+        path: ".hlavi/README.md",
+        message: "Initialize Hlavi: Add README",
+        content: Buffer.from(readmeContent).toString("base64"),
+      });
+
+      // Create tasks/.gitkeep to ensure the directory exists
+      await this.octokit.repos.createOrUpdateFileContents({
+        owner,
+        repo,
+        path: ".hlavi/tasks/.gitkeep",
+        message: "Initialize Hlavi: Create tasks directory",
+        content: Buffer.from("").toString("base64"),
+      });
+    } catch (error) {
+      console.error("Failed to initialize Hlavi:", error);
+      throw new Error("Failed to initialize Hlavi directory structure");
+    }
+  }
 }

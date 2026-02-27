@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRepositories } from "@/hooks/useRepositories";
 import { useRepository } from "@/contexts/RepositoryContext";
-import { GitBranch, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
+import { useInitializeHlavi } from "@/hooks/useInitializeHlavi";
+import { GitBranch, Loader2, AlertCircle, CheckCircle2, Sparkles } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 function useCheckHlavi(owner: string, repo: string) {
@@ -24,6 +25,7 @@ function useCheckHlavi(owner: string, repo: string) {
 export function RepoSelector() {
   const { data, isLoading, error } = useRepositories();
   const { owner, repo, setRepository, clearRepository } = useRepository();
+  const initializeHlavi = useInitializeHlavi();
   const [pendingSelection, setPendingSelection] = useState<{
     owner: string;
     repo: string;
@@ -35,13 +37,18 @@ export function RepoSelector() {
     pendingSelection?.repo || repo || ""
   );
 
-  // Update repository once validation passes
+  // Update repository once validation passes, or clear if validation fails
   useEffect(() => {
-    if (pendingSelection && hlaviCheck?.hasHlavi) {
-      setRepository(pendingSelection.owner, pendingSelection.repo);
-      setPendingSelection(null);
+    if (pendingSelection && hlaviCheck !== undefined && !isCheckingHlavi) {
+      if (hlaviCheck?.hasHlavi) {
+        setRepository(pendingSelection.owner, pendingSelection.repo);
+        setPendingSelection(null);
+      } else {
+        // Clear the repository context when selected repo doesn't have Hlavi
+        clearRepository();
+      }
     }
-  }, [pendingSelection, hlaviCheck, setRepository]);
+  }, [pendingSelection, hlaviCheck, isCheckingHlavi, setRepository, clearRepository]);
 
   if (isLoading) {
     return (
@@ -92,6 +99,15 @@ export function RepoSelector() {
     }
   };
 
+  const handleInitialize = async () => {
+    if (!pendingSelection) return;
+
+    await initializeHlavi.mutateAsync({
+      owner: pendingSelection.owner,
+      repo: pendingSelection.repo,
+    });
+  };
+
   const showWarning =
     pendingSelection &&
     !isCheckingHlavi &&
@@ -125,14 +141,38 @@ export function RepoSelector() {
       )}
 
       {showWarning && (
-        <div className="flex items-start gap-2 text-orange-600 bg-orange-50 border border-orange-200 rounded-lg p-3">
-          <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
-          <div className="text-sm">
-            <p className="font-medium">No hlavi tasks found</p>
-            <p className="mt-1">
-              This repository doesn't have a <code className="bg-orange-100 px-1 py-0.5 rounded">.hlavi</code> directory.
-              Initialize hlavi by running <code className="bg-orange-100 px-1 py-0.5 rounded">hlavi init</code> in this repository.
-            </p>
+        <div className="bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <Sparkles className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="font-semibold text-gray-900 mb-1">
+                Initialize Hlavi in this repository
+              </p>
+              <p className="text-sm text-gray-600 mb-3">
+                This repository doesn't have a <code className="text-xs bg-white px-1.5 py-0.5 rounded border border-gray-200">.hlavi</code> directory yet.
+                Add Hlavi to get started with git-based task management.
+              </p>
+              <button
+                onClick={handleInitialize}
+                disabled={initializeHlavi.isPending}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+              >
+                {initializeHlavi.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Initializing...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4" />
+                    Initialize Hlavi
+                  </>
+                )}
+              </button>
+              <p className="text-xs text-gray-500 mt-2">
+                This will create the <code className="bg-white px-1 py-0.5 rounded border border-gray-200">.hlavi</code> directory with default configuration
+              </p>
+            </div>
           </div>
         </div>
       )}

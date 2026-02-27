@@ -366,7 +366,13 @@ export default function LandingPage() {
               Built with ❤️ for developers who value simplicity and control
             </p>
             <div className="flex items-center gap-6 md:flex-1 md:justify-end">
-              <a href="https://github.com" className="text-gray-600 hover:text-gray-900 transition-colors">
+              <a
+                href="https://mmuhlariholdings.github.io/hlavi/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-600 hover:text-gray-900 transition-colors"
+                aria-label="View Hlavi CLI on GitHub Pages"
+              >
                 <GitHubLogo className="w-5 h-5" />
               </a>
             </div>

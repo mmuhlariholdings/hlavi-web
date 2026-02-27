@@ -218,6 +218,89 @@ export class GitHubService {
     });
   }
 
+  async createTask(
+    owner: string,
+    repo: string,
+    taskData: {
+      title: string;
+      description?: string;
+      status?: string;
+      start_date?: string;
+      end_date?: string;
+    }
+  ): Promise<Task> {
+    // Get current board config to determine next task ID
+    const board = await this.getBoardConfig(owner, repo);
+    if (!board) {
+      throw new Error("Board configuration not found");
+    }
+
+    const taskId = `HLA${board.next_task_number}`;
+    const now = new Date().toISOString();
+
+    // Create new task object
+    const newTask: Task = {
+      id: taskId,
+      title: taskData.title,
+      description: taskData.description || null,
+      status: (taskData.status as any) || "new",
+      acceptance_criteria: [],
+      created_at: now,
+      updated_at: now,
+      agent_assigned: false,
+      rejection_reason: null,
+      start_date: taskData.start_date || null,
+      end_date: taskData.end_date || null,
+    };
+
+    // Update board config
+    const updatedBoard: Board = {
+      ...board,
+      tasks: {
+        ...board.tasks,
+        [taskId]: newTask.status,
+      },
+      next_task_number: board.next_task_number + 1,
+    };
+
+    // Get current board.json file SHA
+    const { data: currentBoardFile } = await this.octokit.repos.getContent({
+      owner,
+      repo,
+      path: ".hlavi/board.json",
+    });
+
+    if (!("sha" in currentBoardFile)) {
+      throw new Error("Board file not found");
+    }
+
+    try {
+      // Create task file
+      await this.octokit.repos.createOrUpdateFileContents({
+        owner,
+        repo,
+        path: `.hlavi/tasks/${taskId}.json`,
+        message: `Create task ${taskId}: ${taskData.title}`,
+        content: Buffer.from(JSON.stringify(newTask, null, 2)).toString("base64"),
+      });
+
+      // Update board.json
+      await this.octokit.repos.createOrUpdateFileContents({
+        owner,
+        repo,
+        path: ".hlavi/board.json",
+        message: `Update board: Add task ${taskId}`,
+        content: Buffer.from(JSON.stringify(updatedBoard, null, 2)).toString("base64"),
+        sha: currentBoardFile.sha,
+      });
+
+      return newTask;
+    } catch (error) {
+      console.error("Failed to create task:", error);
+      throw new Error("Failed to create task");
+    }
+  }
+
   async initializeHlavi(owner: string, repo: string): Promise<void> {
     const now = new Date().toISOString();
     const weekFromNow = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();

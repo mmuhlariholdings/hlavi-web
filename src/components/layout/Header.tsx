@@ -3,11 +3,15 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Calendar, CalendarCheck, Kanban, Menu, X } from "lucide-react";
+import { LayoutDashboard, Calendar, CalendarCheck, Kanban, Menu, X, Plus } from "lucide-react";
+import { useRepository } from "@/contexts/RepositoryContext";
+import { CreateTaskModal } from "@/components/tasks/CreateTaskModal";
 
 export function Header() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const { owner, repo } = useRepository();
 
   const navItems = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -32,27 +36,40 @@ export function Header() {
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex gap-1">
-              {navItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = pathname === item.href;
+            <div className="hidden md:flex items-center gap-3">
+              <nav className="flex gap-1">
+                {navItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = pathname === item.href;
 
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      isActive
-                        ? "bg-blue-50 text-blue-700"
-                        : "text-gray-700 hover:bg-gray-100"
-                    }`}
-                  >
-                    <Icon className="w-4 h-4" />
-                    {item.label}
-                  </Link>
-                );
-              })}
-            </nav>
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        isActive
+                          ? "bg-blue-50 text-blue-700"
+                          : "text-gray-700 hover:bg-gray-100"
+                      }`}
+                    >
+                      <Icon className="w-4 h-4" />
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </nav>
+
+              {/* New Task Button (Desktop) */}
+              {owner && repo && (
+                <button
+                  onClick={() => setCreateModalOpen(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  New Task
+                </button>
+              )}
+            </div>
 
             {/* Mobile Menu Button */}
             <button
@@ -93,6 +110,20 @@ export function Header() {
                   </Link>
                 );
               })}
+
+              {/* New Task Button (Mobile) */}
+              {owner && repo && (
+                <button
+                  onClick={() => {
+                    setCreateModalOpen(true);
+                    closeMobileMenu();
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-3 bg-blue-600 text-white rounded-lg text-base font-medium hover:bg-blue-700 transition-colors mt-2"
+                >
+                  <Plus className="w-5 h-5" />
+                  New Task
+                </button>
+              )}
             </nav>
           </div>
         )}
@@ -105,6 +136,12 @@ export function Header() {
           onClick={closeMobileMenu}
         />
       )}
+
+      {/* Create Task Modal */}
+      <CreateTaskModal
+        isOpen={createModalOpen}
+        onClose={() => setCreateModalOpen(false)}
+      />
     </>
   );
 }

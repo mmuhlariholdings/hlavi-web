@@ -216,8 +216,6 @@ export default function LandingPage() {
               </p>
               <div className="bg-gray-900/50 rounded-lg p-4 font-mono text-sm">
                 <span className="text-blue-300">$</span> hlavi init
-                <br />
-                <span className="text-green-400">✓</span> Created .hlavi/ directory
               </div>
             </div>
           </div>
@@ -275,7 +273,8 @@ export default function LandingPage() {
                 ]}
                 className="font-semibold text-white"
               />
-              , and watching an AI agent work through it autonomously—all while you track progress in real-time.
+              <br />
+              and watching an AI agent work through it autonomously—all while you track progress in real-time.
             </p>
             <p className="text-sm text-blue-200">
               CLI integration coming soon. Stay tuned for autonomous task execution.

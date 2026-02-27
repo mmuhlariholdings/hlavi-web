@@ -192,12 +192,12 @@ export default function LandingPage() {
 
           <div className="grid md:grid-cols-2 gap-8 mb-12">
             {/* Feature 1: Autonomous Agents */}
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 flex flex-col">
               <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mb-4">
                 <Zap className="w-6 h-6 text-white" />
               </div>
               <h3 className="text-2xl font-bold mb-3">AI-Powered Execution</h3>
-              <p className="text-blue-100 mb-4">
+              <p className="text-blue-100 mb-4 flex-1">
                 Select your preferred AI model or run in auto mode. Agents autonomously work through tasks—from coding to research to content creation—checking off acceptance criteria as they complete each requirement.
               </p>
               <div className="bg-gray-900/50 rounded-lg p-4 font-mono text-sm">
@@ -206,12 +206,12 @@ export default function LandingPage() {
             </div>
 
             {/* Feature 2: Repository Integration */}
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 flex flex-col">
               <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mb-4">
                 <GitBranch className="w-6 h-6 text-white" />
               </div>
               <h3 className="text-2xl font-bold mb-3">Seamless Repo Integration</h3>
-              <p className="text-blue-100 mb-4">
+              <p className="text-blue-100 mb-4 flex-1">
                 Initialize Hlavi in any existing project—code repositories, research papers, documentation sites, or content projects. Create tasks that directly modify files with every change tracked in git.
               </p>
               <div className="bg-gray-900/50 rounded-lg p-4 font-mono text-sm">

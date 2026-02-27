@@ -16,12 +16,37 @@ export class GitHubService {
     return data as Repository[];
   }
 
-  async checkHlaviDirectory(owner: string, repo: string): Promise<boolean> {
+  async getBranches(owner: string, repo: string): Promise<Array<{ name: string }>> {
+    try {
+      const { data } = await this.octokit.repos.listBranches({
+        owner,
+        repo,
+        per_page: 100,
+      });
+      return data.map((branch) => ({ name: branch.name }));
+    } catch (error) {
+      console.error("Failed to get branches:", error);
+      return [];
+    }
+  }
+
+  async getDefaultBranch(owner: string, repo: string): Promise<string> {
+    try {
+      const { data } = await this.octokit.repos.get({ owner, repo });
+      return data.default_branch;
+    } catch (error) {
+      console.error("Failed to get default branch:", error);
+      return "main";
+    }
+  }
+
+  async checkHlaviDirectory(owner: string, repo: string, branch?: string): Promise<boolean> {
     try {
       await this.octokit.repos.getContent({
         owner,
         repo,
         path: ".hlavi",
+        ...(branch && { ref: branch }),
       });
       return true;
     } catch (error) {
@@ -29,12 +54,13 @@ export class GitHubService {
     }
   }
 
-  async getTaskFiles(owner: string, repo: string): Promise<GitHubContent[]> {
+  async getTaskFiles(owner: string, repo: string, branch?: string): Promise<GitHubContent[]> {
     try {
       const { data } = await this.octokit.repos.getContent({
         owner,
         repo,
         path: ".hlavi/tasks",
+        ...(branch && { ref: branch }),
       });
 
       if (!Array.isArray(data)) {
@@ -48,11 +74,12 @@ export class GitHubService {
     }
   }
 
-  async getTask(owner: string, repo: string, taskId: string): Promise<Task> {
+  async getTask(owner: string, repo: string, taskId: string, branch?: string): Promise<Task> {
     const { data } = await this.octokit.repos.getContent({
       owner,
       repo,
       path: `.hlavi/tasks/${taskId}.json`,
+      ...(branch && { ref: branch }),
     });
 
     if ("content" in data && data.content) {
@@ -63,14 +90,14 @@ export class GitHubService {
     throw new Error("Failed to fetch task");
   }
 
-  async getAllTasks(owner: string, repo: string): Promise<Task[]> {
-    const files = await this.getTaskFiles(owner, repo);
+  async getAllTasks(owner: string, repo: string, branch?: string): Promise<Task[]> {
+    const files = await this.getTaskFiles(owner, repo, branch);
     const tasks: Task[] = [];
 
     for (const file of files) {
       const taskId = file.name.replace(".json", "");
       try {
-        const task = await this.getTask(owner, repo, taskId);
+        const task = await this.getTask(owner, repo, taskId, branch);
         tasks.push(task);
       } catch (error) {
         console.error(`Failed to fetch task ${taskId}:`, error);
@@ -80,12 +107,13 @@ export class GitHubService {
     return tasks;
   }
 
-  async getBoardConfig(owner: string, repo: string): Promise<Board | null> {
+  async getBoardConfig(owner: string, repo: string, branch?: string): Promise<Board | null> {
     try {
       const { data } = await this.octokit.repos.getContent({
         owner,
         repo,
         path: ".hlavi/board.json",
+        ...(branch && { ref: branch }),
       });
 
       if ("content" in data && data.content) {
@@ -103,13 +131,15 @@ export class GitHubService {
     owner: string,
     repo: string,
     taskId: string,
-    updates: Partial<Task>
+    updates: Partial<Task>,
+    branch?: string
   ): Promise<Task> {
     // Get current file to retrieve SHA (required for updates)
     const { data: currentFile } = await this.octokit.repos.getContent({
       owner,
       repo,
       path: `.hlavi/tasks/${taskId}.json`,
+      ...(branch && { ref: branch }),
     });
 
     if (!("sha" in currentFile)) {
@@ -117,7 +147,7 @@ export class GitHubService {
     }
 
     // Get current task data
-    const currentTask = await this.getTask(owner, repo, taskId);
+    const currentTask = await this.getTask(owner, repo, taskId, branch);
 
     // Merge updates with current task data
     const updatedTask: Task = {
@@ -136,6 +166,7 @@ export class GitHubService {
         "base64"
       ),
       sha: currentFile.sha,
+      ...(branch && { branch }),
     });
 
     return updatedTask;
@@ -145,9 +176,10 @@ export class GitHubService {
     owner: string,
     repo: string,
     taskId: string,
-    description: string
+    description: string,
+    branch?: string
   ): Promise<Task> {
-    const currentTask = await this.getTask(owner, repo, taskId);
+    const currentTask = await this.getTask(owner, repo, taskId, branch);
 
     // Find next ID
     const nextId =
@@ -173,16 +205,17 @@ export class GitHubService {
     // Update the task
     return this.updateTask(owner, repo, taskId, {
       acceptance_criteria: updatedTask.acceptance_criteria,
-    });
+    }, branch);
   }
 
   async toggleAcceptanceCriteria(
     owner: string,
     repo: string,
     taskId: string,
-    criteriaId: number
+    criteriaId: number,
+    branch?: string
   ): Promise<Task> {
-    const currentTask = await this.getTask(owner, repo, taskId);
+    const currentTask = await this.getTask(owner, repo, taskId, branch);
 
     // Toggle the specific criteria
     const updatedCriteria = currentTask.acceptance_criteria.map((ac) =>
@@ -197,16 +230,17 @@ export class GitHubService {
 
     return this.updateTask(owner, repo, taskId, {
       acceptance_criteria: updatedCriteria,
-    });
+    }, branch);
   }
 
   async deleteAcceptanceCriteria(
     owner: string,
     repo: string,
     taskId: string,
-    criteriaId: number
+    criteriaId: number,
+    branch?: string
   ): Promise<Task> {
-    const currentTask = await this.getTask(owner, repo, taskId);
+    const currentTask = await this.getTask(owner, repo, taskId, branch);
 
     // Remove the specific criteria
     const updatedCriteria = currentTask.acceptance_criteria.filter(
@@ -215,7 +249,7 @@ export class GitHubService {
 
     return this.updateTask(owner, repo, taskId, {
       acceptance_criteria: updatedCriteria,
-    });
+    }, branch);
   }
 
   async createTask(
@@ -227,10 +261,11 @@ export class GitHubService {
       status?: string;
       start_date?: string;
       end_date?: string;
-    }
+    },
+    branch?: string
   ): Promise<Task> {
     // Get current board config to determine next task ID
-    const board = await this.getBoardConfig(owner, repo);
+    const board = await this.getBoardConfig(owner, repo, branch);
     if (!board) {
       throw new Error("Board configuration not found");
     }
@@ -268,6 +303,7 @@ export class GitHubService {
       owner,
       repo,
       path: ".hlavi/board.json",
+      ...(branch && { ref: branch }),
     });
 
     if (!("sha" in currentBoardFile)) {
@@ -282,6 +318,7 @@ export class GitHubService {
         path: `.hlavi/tasks/${taskId}.json`,
         message: `Create task ${taskId}: ${taskData.title}`,
         content: Buffer.from(JSON.stringify(newTask, null, 2)).toString("base64"),
+        ...(branch && { branch }),
       });
 
       // Update board.json
@@ -292,6 +329,7 @@ export class GitHubService {
         message: `Update board: Add task ${taskId}`,
         content: Buffer.from(JSON.stringify(updatedBoard, null, 2)).toString("base64"),
         sha: currentBoardFile.sha,
+        ...(branch && { branch }),
       });
 
       return newTask;
@@ -301,7 +339,7 @@ export class GitHubService {
     }
   }
 
-  async initializeHlavi(owner: string, repo: string): Promise<void> {
+  async initializeHlavi(owner: string, repo: string, branch?: string): Promise<void> {
     const now = new Date().toISOString();
     const weekFromNow = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
 
@@ -368,6 +406,7 @@ export class GitHubService {
         path: ".hlavi/board.json",
         message: "Initialize Hlavi: Add board configuration",
         content: Buffer.from(JSON.stringify(defaultBoard, null, 2)).toString("base64"),
+        ...(branch && { branch }),
       });
 
       // Create example task
@@ -377,6 +416,7 @@ export class GitHubService {
         path: ".hlavi/tasks/HLA1.json",
         message: "Initialize Hlavi: Add example task",
         content: Buffer.from(JSON.stringify(exampleTask, null, 2)).toString("base64"),
+        ...(branch && { branch }),
       });
     } catch (error) {
       console.error("Failed to initialize Hlavi:", error);

@@ -14,7 +14,7 @@ export async function PATCH(
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { owner, repo, updates } = await request.json();
+    const { owner, repo, branch, updates } = await request.json();
 
     if (!owner || !repo) {
       return Response.json(
@@ -25,7 +25,7 @@ export async function PATCH(
 
     const { taskId } = await params;
     const github = new GitHubService(session.accessToken);
-    const task = await github.updateTask(owner, repo, taskId, updates);
+    const task = await github.updateTask(owner, repo, taskId, updates, branch);
 
     return Response.json({ task }, { status: 200 });
   } catch (error) {

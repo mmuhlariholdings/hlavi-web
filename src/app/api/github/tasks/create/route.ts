@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { owner, repo, title, description, status, start_date, end_date } = body;
+    const { owner, repo, branch, title, description, status, start_date, end_date } = body;
 
     if (!owner || !repo || !title) {
       return Response.json(
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
       status,
       start_date,
       end_date,
-    });
+    }, branch);
 
     return Response.json({ task }, { status: 201 });
   } catch (error) {

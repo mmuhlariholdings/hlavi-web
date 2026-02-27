@@ -4,19 +4,20 @@ import toast from "react-hot-toast";
 interface InitializeHlaviParams {
   owner: string;
   repo: string;
+  branch?: string | null;
 }
 
 export function useInitializeHlavi() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ owner, repo }: InitializeHlaviParams) => {
+    mutationFn: async ({ owner, repo, branch }: InitializeHlaviParams) => {
       const response = await fetch("/api/github/init-hlavi", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ owner, repo }),
+        body: JSON.stringify({ owner, repo, branch }),
       });
 
       if (!response.ok) {
@@ -29,7 +30,7 @@ export function useInitializeHlavi() {
     onSuccess: (data, variables) => {
       // Invalidate the hlavi check query to refresh the status
       queryClient.invalidateQueries({
-        queryKey: ["check-hlavi", variables.owner, variables.repo],
+        queryKey: ["check-hlavi", variables.owner, variables.repo, variables.branch],
       });
 
       toast.success("Hlavi initialized successfully! 🎉");

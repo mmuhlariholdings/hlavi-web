@@ -14,7 +14,7 @@ export async function POST(
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { owner, repo, description } = await request.json();
+    const { owner, repo, branch, description } = await request.json();
     const { taskId } = await params;
 
     if (!owner || !repo || !description) {
@@ -29,7 +29,8 @@ export async function POST(
       owner,
       repo,
       taskId,
-      description
+      description,
+      branch
     );
 
     return Response.json({ task }, { status: 200 });

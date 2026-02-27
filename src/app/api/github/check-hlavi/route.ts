@@ -12,6 +12,7 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const owner = searchParams.get("owner");
   const repo = searchParams.get("repo");
+  const branch = searchParams.get("branch");
 
   if (!owner || !repo) {
     return NextResponse.json(
@@ -22,7 +23,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const github = new GitHubService(session.accessToken);
-    const hasHlavi = await github.checkHlaviDirectory(owner, repo);
+    const hasHlavi = await github.checkHlaviDirectory(owner, repo, branch || undefined);
 
     return NextResponse.json({ hasHlavi });
   } catch (error) {

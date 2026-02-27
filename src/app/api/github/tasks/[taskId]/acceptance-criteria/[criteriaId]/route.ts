@@ -14,7 +14,7 @@ export async function PATCH(
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { owner, repo } = await request.json();
+    const { owner, repo, branch } = await request.json();
     const { taskId, criteriaId } = await params;
 
     if (!owner || !repo) {
@@ -29,7 +29,8 @@ export async function PATCH(
       owner,
       repo,
       taskId,
-      parseInt(criteriaId)
+      parseInt(criteriaId),
+      branch
     );
 
     return Response.json({ task }, { status: 200 });
@@ -57,6 +58,7 @@ export async function DELETE(
     const { searchParams } = new URL(request.url);
     const owner = searchParams.get("owner");
     const repo = searchParams.get("repo");
+    const branch = searchParams.get("branch");
     const { taskId, criteriaId } = await params;
 
     if (!owner || !repo) {
@@ -71,7 +73,8 @@ export async function DELETE(
       owner,
       repo,
       taskId,
-      parseInt(criteriaId)
+      parseInt(criteriaId),
+      branch || undefined
     );
 
     return Response.json({ task }, { status: 200 });

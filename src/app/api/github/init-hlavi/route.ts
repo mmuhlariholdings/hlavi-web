@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { owner, repo } = await request.json();
+    const { owner, repo, branch } = await request.json();
 
     if (!owner || !repo) {
       return Response.json(
@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     const github = new GitHubService(session.accessToken);
 
     // Check if .hlavi already exists
-    const hasHlavi = await github.checkHlaviDirectory(owner, repo);
+    const hasHlavi = await github.checkHlaviDirectory(owner, repo, branch);
     if (hasHlavi) {
       return Response.json(
         { error: "Hlavi directory already exists" },
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Initialize the directory structure
-    await github.initializeHlavi(owner, repo);
+    await github.initializeHlavi(owner, repo, branch);
 
     return Response.json(
       { message: "Hlavi initialized successfully" },

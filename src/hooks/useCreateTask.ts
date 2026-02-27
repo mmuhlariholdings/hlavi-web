@@ -5,6 +5,7 @@ import { Task } from "@/lib/types";
 interface CreateTaskParams {
   owner: string;
   repo: string;
+  branch?: string | null;
   title: string;
   description?: string;
   status?: string;
@@ -35,12 +36,12 @@ export function useCreateTask() {
     onSuccess: (data, variables) => {
       // Invalidate tasks list to refresh
       queryClient.invalidateQueries({
-        queryKey: ["tasks", variables.owner, variables.repo],
+        queryKey: ["tasks", variables.owner, variables.repo, variables.branch],
       });
 
       // Invalidate board config to get updated next_task_number
       queryClient.invalidateQueries({
-        queryKey: ["board-config", variables.owner, variables.repo],
+        queryKey: ["board-config", variables.owner, variables.repo, variables.branch],
       });
 
       toast.success(`Task ${data.task.id} created successfully!`);

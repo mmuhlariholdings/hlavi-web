@@ -12,6 +12,7 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const owner = searchParams.get("owner");
   const repo = searchParams.get("repo");
+  const branch = searchParams.get("branch");
   const taskId = searchParams.get("taskId");
 
   if (!owner || !repo) {
@@ -26,11 +27,11 @@ export async function GET(request: NextRequest) {
 
     if (taskId) {
       // Fetch single task
-      const task = await github.getTask(owner, repo, taskId);
+      const task = await github.getTask(owner, repo, taskId, branch || undefined);
       return NextResponse.json({ task });
     } else {
       // Fetch all tasks
-      const tasks = await github.getAllTasks(owner, repo);
+      const tasks = await github.getAllTasks(owner, repo, branch || undefined);
       return NextResponse.json({ tasks });
     }
   } catch (error) {

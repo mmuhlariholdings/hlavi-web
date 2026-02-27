@@ -12,7 +12,6 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const owner = searchParams.get("owner");
   const repo = searchParams.get("repo");
-  const branch = searchParams.get("branch");
 
   if (!owner || !repo) {
     return NextResponse.json(
@@ -23,13 +22,14 @@ export async function GET(request: NextRequest) {
 
   try {
     const github = new GitHubService(session.accessToken);
-    const board = await github.getBoardConfig(owner, repo, branch || undefined);
+    const branches = await github.getBranches(owner, repo);
+    const defaultBranch = await github.getDefaultBranch(owner, repo);
 
-    return NextResponse.json({ board });
+    return NextResponse.json({ branches, defaultBranch });
   } catch (error) {
-    console.error("Failed to fetch board config:", error);
+    console.error("Failed to fetch branches:", error);
     return NextResponse.json(
-      { error: "Failed to fetch board config" },
+      { error: "Failed to fetch branches" },
       { status: 500 }
     );
   }

@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 interface UpdateTaskParams {
   owner: string;
   repo: string;
+  branch?: string | null;
   taskId: string;
   updates: Partial<Task>;
 }
@@ -20,6 +21,7 @@ export function useUpdateTask() {
     mutationFn: async ({
       owner,
       repo,
+      branch,
       taskId,
       updates,
     }: UpdateTaskParams): Promise<UpdateTaskResponse> => {
@@ -28,7 +30,7 @@ export function useUpdateTask() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ owner, repo, updates }),
+        body: JSON.stringify({ owner, repo, branch, updates }),
       });
 
       if (!response.ok) {
@@ -41,10 +43,10 @@ export function useUpdateTask() {
     onMutate: async (variables) => {
       // Cancel outgoing refetches to avoid overwriting optimistic update
       await queryClient.cancelQueries({
-        queryKey: ["task", variables.owner, variables.repo, variables.taskId],
+        queryKey: ["task", variables.owner, variables.repo, variables.taskId, variables.branch],
       });
       await queryClient.cancelQueries({
-        queryKey: ["tasks", variables.owner, variables.repo],
+        queryKey: ["tasks", variables.owner, variables.repo, variables.branch],
       });
 
       // Snapshot previous values
@@ -53,16 +55,18 @@ export function useUpdateTask() {
         variables.owner,
         variables.repo,
         variables.taskId,
+        variables.branch,
       ]);
       const previousTasks = queryClient.getQueryData([
         "tasks",
         variables.owner,
         variables.repo,
+        variables.branch,
       ]);
 
       // Optimistically update individual task
       queryClient.setQueryData(
-        ["task", variables.owner, variables.repo, variables.taskId],
+        ["task", variables.owner, variables.repo, variables.taskId, variables.branch],
         (old: any) => {
           if (!old?.task) return old;
           return {
@@ -77,7 +81,7 @@ export function useUpdateTask() {
 
       // Optimistically update tasks list
       queryClient.setQueryData(
-        ["tasks", variables.owner, variables.repo],
+        ["tasks", variables.owner, variables.repo, variables.branch],
         (old: any) => {
           if (!old?.tasks) return old;
           return {
@@ -100,10 +104,10 @@ export function useUpdateTask() {
     onSuccess: (data, variables) => {
       // Invalidate and refetch to ensure consistency with server
       queryClient.invalidateQueries({
-        queryKey: ["tasks", variables.owner, variables.repo],
+        queryKey: ["tasks", variables.owner, variables.repo, variables.branch],
       });
       queryClient.invalidateQueries({
-        queryKey: ["task", variables.owner, variables.repo, variables.taskId],
+        queryKey: ["task", variables.owner, variables.repo, variables.taskId, variables.branch],
       });
 
       // Show success toast
@@ -113,13 +117,13 @@ export function useUpdateTask() {
       // Rollback optimistic updates on error
       if (context?.previousTask) {
         queryClient.setQueryData(
-          ["task", variables.owner, variables.repo, variables.taskId],
+          ["task", variables.owner, variables.repo, variables.taskId, variables.branch],
           context.previousTask
         );
       }
       if (context?.previousTasks) {
         queryClient.setQueryData(
-          ["tasks", variables.owner, variables.repo],
+          ["tasks", variables.owner, variables.repo, variables.branch],
           context.previousTasks
         );
       }

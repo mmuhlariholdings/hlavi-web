@@ -24,13 +24,16 @@ const DEFAULT_BOARD_CONFIG: BoardConfig = {
   ],
 };
 
-export function useBoardConfig(owner: string, repo: string) {
+export function useBoardConfig(owner: string, repo: string, branch?: string | null) {
   return useQuery<BoardConfig>({
-    queryKey: ["board-config", owner, repo],
+    queryKey: ["board-config", owner, repo, branch],
     queryFn: async () => {
-      const res = await fetch(
-        `/api/github/board-config?owner=${encodeURIComponent(owner)}&repo=${encodeURIComponent(repo)}`
-      );
+      const params = new URLSearchParams({
+        owner,
+        repo,
+        ...(branch && { branch }),
+      });
+      const res = await fetch(`/api/github/board-config?${params}`);
       if (!res.ok) throw new Error("Failed to fetch board config");
       const data: { board: Board | null } = await res.json();
       return data.board?.config || DEFAULT_BOARD_CONFIG;

@@ -38,13 +38,70 @@ export function useUpdateTask() {
 
       return response.json();
     },
-    onSuccess: (data, variables) => {
-      // Invalidate and refetch tasks list
-      queryClient.invalidateQueries({
+    onMutate: async (variables) => {
+      // Cancel outgoing refetches to avoid overwriting optimistic update
+      await queryClient.cancelQueries({
+        queryKey: ["task", variables.owner, variables.repo, variables.taskId],
+      });
+      await queryClient.cancelQueries({
         queryKey: ["tasks", variables.owner, variables.repo],
       });
 
-      // Invalidate and refetch the specific task
+      // Snapshot previous values
+      const previousTask = queryClient.getQueryData([
+        "task",
+        variables.owner,
+        variables.repo,
+        variables.taskId,
+      ]);
+      const previousTasks = queryClient.getQueryData([
+        "tasks",
+        variables.owner,
+        variables.repo,
+      ]);
+
+      // Optimistically update individual task
+      queryClient.setQueryData(
+        ["task", variables.owner, variables.repo, variables.taskId],
+        (old: any) => {
+          if (!old?.task) return old;
+          return {
+            task: {
+              ...old.task,
+              ...variables.updates,
+              updated_at: new Date().toISOString(),
+            },
+          };
+        }
+      );
+
+      // Optimistically update tasks list
+      queryClient.setQueryData(
+        ["tasks", variables.owner, variables.repo],
+        (old: any) => {
+          if (!old?.tasks) return old;
+          return {
+            tasks: old.tasks.map((task: Task) =>
+              task.id === variables.taskId
+                ? {
+                    ...task,
+                    ...variables.updates,
+                    updated_at: new Date().toISOString(),
+                  }
+                : task
+            ),
+          };
+        }
+      );
+
+      // Return context with previous values
+      return { previousTask, previousTasks };
+    },
+    onSuccess: (data, variables) => {
+      // Invalidate and refetch to ensure consistency with server
+      queryClient.invalidateQueries({
+        queryKey: ["tasks", variables.owner, variables.repo],
+      });
       queryClient.invalidateQueries({
         queryKey: ["task", variables.owner, variables.repo, variables.taskId],
       });
@@ -52,7 +109,21 @@ export function useUpdateTask() {
       // Show success toast
       toast.success("Task updated successfully");
     },
-    onError: (error: Error) => {
+    onError: (error: Error, variables, context: any) => {
+      // Rollback optimistic updates on error
+      if (context?.previousTask) {
+        queryClient.setQueryData(
+          ["task", variables.owner, variables.repo, variables.taskId],
+          context.previousTask
+        );
+      }
+      if (context?.previousTasks) {
+        queryClient.setQueryData(
+          ["tasks", variables.owner, variables.repo],
+          context.previousTasks
+        );
+      }
+
       // Show error toast
       toast.error(error.message || "Failed to update task");
     },

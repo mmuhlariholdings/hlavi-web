@@ -28,7 +28,12 @@ export function useInitializeHlavi() {
       return response.json();
     },
     onSuccess: (data, variables) => {
-      // Invalidate the hlavi check query to refresh the status
+      // Invalidate the hlavi check query for the specific branch to refresh the status
+      queryClient.invalidateQueries({
+        queryKey: ["check-hlavi", variables.owner, variables.repo, variables.branch],
+      });
+
+      // Also invalidate without branch to refresh general repo status
       queryClient.invalidateQueries({
         queryKey: ["check-hlavi", variables.owner, variables.repo],
       });

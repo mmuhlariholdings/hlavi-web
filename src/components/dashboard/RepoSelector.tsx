@@ -9,18 +9,21 @@ import { BranchSelector } from "./BranchSelector";
 import { GitBranch, Loader2, AlertCircle, CheckCircle2, Sparkles } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
-function useCheckHlavi(owner: string, repo: string) {
+function useCheckHlavi(owner: string, repo: string, branch?: string) {
   return useQuery<{ hasHlavi: boolean }>({
-    queryKey: ["check-hlavi", owner, repo],
+    queryKey: ["check-hlavi", owner, repo, branch],
     queryFn: async () => {
-      const res = await fetch(
-        `/api/github/check-hlavi?owner=${encodeURIComponent(owner)}&repo=${encodeURIComponent(repo)}`
-      );
+      const params = new URLSearchParams({
+        owner,
+        repo,
+        ...(branch && { branch }),
+      });
+      const res = await fetch(`/api/github/check-hlavi?${params}`);
       if (!res.ok) throw new Error("Failed to check .hlavi directory");
       return res.json();
     },
     enabled: !!owner && !!repo,
-    staleTime: Infinity, // Cache forever - hlavi directory rarely changes
+    staleTime: 30000, // Cache for 30 seconds - allow branch switching to refetch
   });
 }
 
@@ -34,10 +37,11 @@ export function RepoSelector() {
   } | null>(null);
   const [initBranch, setInitBranch] = useState<string>("");
 
-  // Check if selected repo has .hlavi
+  // Check if selected repo has .hlavi on the selected branch
   const { data: hlaviCheck, isLoading: isCheckingHlavi } = useCheckHlavi(
     pendingSelection?.owner || owner || "",
-    pendingSelection?.repo || repo || ""
+    pendingSelection?.repo || repo || "",
+    pendingSelection ? initBranch : undefined
   );
 
   // Fetch branches for pending selection (for initialization)

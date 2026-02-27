@@ -1,0 +1,35 @@
+{
+  "id": "HLA17",
+  "title": "Post-launch: Collect and analyze feedback",
+  "description": "Compile all feedback from Product Hunt, HN, Reddit, Twitter. Categorize into bugs, feature requests, and praise. Create follow-up tasks for high-priority items.",
+  "status": "open",
+  "acceptance_criteria": [
+    {
+      "id": 1,
+      "description": "Create spreadsheet tracking all feedback sources",
+      "completed": false,
+      "created_at": "2026-02-27T21:00:00.000Z",
+      "completed_at": null
+    },
+    {
+      "id": 2,
+      "description": "Categorize feedback: bugs, features, UX, other",
+      "completed": false,
+      "created_at": "2026-02-27T21:00:00.000Z",
+      "completed_at": null
+    },
+    {
+      "id": 3,
+      "description": "Create GitHub issues for top 5 requested features",
+      "completed": false,
+      "created_at": "2026-02-27T21:00:00.000Z",
+      "completed_at": null
+    }
+  ],
+  "created_at": "2026-02-27T21:00:00.000Z",
+  "updated_at": "2026-02-27T21:00:00.000Z",
+  "agent_assigned": false,
+  "rejection_reason": null,
+  "start_date": "2026-03-06T00:00:00.000Z",
+  "end_date": "2026-03-08T00:00:00.000Z"
+}

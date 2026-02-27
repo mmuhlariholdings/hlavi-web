@@ -1,0 +1,42 @@
+{
+  "id": "HLA9",
+  "title": "Write Dev.to launch article",
+  "description": "Write a comprehensive article for Dev.to titled 'Building Hlavi: Git-Native Task Management with Next.js'. Cover the architecture, key decisions, challenges faced, and lessons learned. Include code snippets and screenshots.",
+  "status": "open",
+  "acceptance_criteria": [
+    {
+      "id": 1,
+      "description": "Write 1500-2000 word article with technical details",
+      "completed": false,
+      "created_at": "2026-02-27T21:00:00.000Z",
+      "completed_at": null
+    },
+    {
+      "id": 2,
+      "description": "Include architecture diagrams and code snippets",
+      "completed": false,
+      "created_at": "2026-02-27T21:00:00.000Z",
+      "completed_at": null
+    },
+    {
+      "id": 3,
+      "description": "Publish on Dev.to with relevant tags (nextjs, typescript, react)",
+      "completed": false,
+      "created_at": "2026-02-27T21:00:00.000Z",
+      "completed_at": null
+    },
+    {
+      "id": 4,
+      "description": "Cross-post to Hashnode",
+      "completed": false,
+      "created_at": "2026-02-27T21:00:00.000Z",
+      "completed_at": null
+    }
+  ],
+  "created_at": "2026-02-27T21:00:00.000Z",
+  "updated_at": "2026-02-27T21:00:00.000Z",
+  "agent_assigned": false,
+  "rejection_reason": null,
+  "start_date": "2026-03-03T00:00:00.000Z",
+  "end_date": "2026-03-06T00:00:00.000Z"
+}

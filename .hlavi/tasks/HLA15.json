@@ -1,0 +1,35 @@
+{
+  "id": "HLA15",
+  "title": "Prepare email outreach to tech communities",
+  "description": "Draft personalized emails to send to JavaScript Weekly, React Status, Node Weekly, and other developer newsletters. Request feature or mention of Hlavi.",
+  "status": "open",
+  "acceptance_criteria": [
+    {
+      "id": 1,
+      "description": "Draft personalized email template",
+      "completed": false,
+      "created_at": "2026-02-27T21:00:00.000Z",
+      "completed_at": null
+    },
+    {
+      "id": 2,
+      "description": "Send to JavaScript Weekly and React Status",
+      "completed": false,
+      "created_at": "2026-02-27T21:00:00.000Z",
+      "completed_at": null
+    },
+    {
+      "id": 3,
+      "description": "Send to Node Weekly and Next.js newsletter",
+      "completed": false,
+      "created_at": "2026-02-27T21:00:00.000Z",
+      "completed_at": null
+    }
+  ],
+  "created_at": "2026-02-27T21:00:00.000Z",
+  "updated_at": "2026-02-27T21:00:00.000Z",
+  "agent_assigned": false,
+  "rejection_reason": null,
+  "start_date": "2026-03-08T00:00:00.000Z",
+  "end_date": "2026-03-10T00:00:00.000Z"
+}

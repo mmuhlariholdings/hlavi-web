@@ -1,0 +1,42 @@
+{
+  "id": "HLA13",
+  "title": "Create GitHub repository README",
+  "description": "Write comprehensive README for GitHub with setup instructions, architecture overview, screenshots, deployment guide, and contribution guidelines. Make it beginner-friendly.",
+  "status": "open",
+  "acceptance_criteria": [
+    {
+      "id": 1,
+      "description": "Write detailed README with all sections from launch guide",
+      "completed": false,
+      "created_at": "2026-02-27T21:00:00.000Z",
+      "completed_at": null
+    },
+    {
+      "id": 2,
+      "description": "Add badges (build status, license, version)",
+      "completed": false,
+      "created_at": "2026-02-27T21:00:00.000Z",
+      "completed_at": null
+    },
+    {
+      "id": 3,
+      "description": "Include screenshots in README",
+      "completed": false,
+      "created_at": "2026-02-27T21:00:00.000Z",
+      "completed_at": null
+    },
+    {
+      "id": 4,
+      "description": "Add CONTRIBUTING.md and CODE_OF_CONDUCT.md",
+      "completed": false,
+      "created_at": "2026-02-27T21:00:00.000Z",
+      "completed_at": null
+    }
+  ],
+  "created_at": "2026-02-27T21:00:00.000Z",
+  "updated_at": "2026-02-27T21:00:00.000Z",
+  "agent_assigned": false,
+  "rejection_reason": null,
+  "start_date": "2026-02-28T00:00:00.000Z",
+  "end_date": "2026-03-02T00:00:00.000Z"
+}

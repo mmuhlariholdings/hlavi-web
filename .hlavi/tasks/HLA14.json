@@ -1,0 +1,35 @@
+{
+  "id": "HLA14",
+  "title": "Set up analytics and monitoring",
+  "description": "Add Google Analytics or Plausible to track visitors. Set up error monitoring with Sentry. Create dashboard to monitor launch metrics (visits, sign-ups, repos initialized).",
+  "status": "open",
+  "acceptance_criteria": [
+    {
+      "id": 1,
+      "description": "Add privacy-focused analytics (Plausible/GA4)",
+      "completed": false,
+      "created_at": "2026-02-27T21:00:00.000Z",
+      "completed_at": null
+    },
+    {
+      "id": 2,
+      "description": "Set up Sentry for error tracking",
+      "completed": false,
+      "created_at": "2026-02-27T21:00:00.000Z",
+      "completed_at": null
+    },
+    {
+      "id": 3,
+      "description": "Create metrics dashboard to track launch success",
+      "completed": false,
+      "created_at": "2026-02-27T21:00:00.000Z",
+      "completed_at": null
+    }
+  ],
+  "created_at": "2026-02-27T21:00:00.000Z",
+  "updated_at": "2026-02-27T21:00:00.000Z",
+  "agent_assigned": false,
+  "rejection_reason": null,
+  "start_date": "2026-02-28T00:00:00.000Z",
+  "end_date": "2026-03-04T00:00:00.000Z"
+}

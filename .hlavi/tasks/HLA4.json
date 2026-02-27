@@ -1,0 +1,49 @@
+{
+  "id": "HLA4",
+  "title": "Prepare Product Hunt launch materials",
+  "description": "Create Product Hunt thumbnail (240x240), write tagline (60 chars max), prepare first comment explaining the 'why', and have launch copy ready. Schedule for Tuesday-Thursday between 12:01-12:30am PST.",
+  "status": "open",
+  "acceptance_criteria": [
+    {
+      "id": 1,
+      "description": "Design 240x240 thumbnail with Hlavi branding",
+      "completed": false,
+      "created_at": "2026-02-27T21:00:00.000Z",
+      "completed_at": null
+    },
+    {
+      "id": 2,
+      "description": "Write compelling tagline (max 60 characters)",
+      "completed": false,
+      "created_at": "2026-02-27T21:00:00.000Z",
+      "completed_at": null
+    },
+    {
+      "id": 3,
+      "description": "Draft first comment (maker story: why you built this)",
+      "completed": false,
+      "created_at": "2026-02-27T21:00:00.000Z",
+      "completed_at": null
+    },
+    {
+      "id": 4,
+      "description": "Upload screenshots, video, and gallery to Product Hunt draft",
+      "completed": false,
+      "created_at": "2026-02-27T21:00:00.000Z",
+      "completed_at": null
+    },
+    {
+      "id": 5,
+      "description": "Recruit 3-5 friends to upvote/comment in first hour",
+      "completed": false,
+      "created_at": "2026-02-27T21:00:00.000Z",
+      "completed_at": null
+    }
+  ],
+  "created_at": "2026-02-27T21:00:00.000Z",
+  "updated_at": "2026-02-27T21:00:00.000Z",
+  "agent_assigned": false,
+  "rejection_reason": null,
+  "start_date": "2026-03-02T00:00:00.000Z",
+  "end_date": "2026-03-04T00:00:00.000Z"
+}

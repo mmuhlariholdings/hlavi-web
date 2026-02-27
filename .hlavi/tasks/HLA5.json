@@ -1,0 +1,42 @@
+{
+  "id": "HLA5",
+  "title": "Launch on Product Hunt",
+  "description": "Submit Hlavi to Product Hunt between 12:01-12:30am PST on a Tuesday/Wednesday/Thursday. Monitor throughout the day and respond to every comment within 2 hours. Post first comment immediately after launch.",
+  "status": "open",
+  "acceptance_criteria": [
+    {
+      "id": 1,
+      "description": "Submit launch at 12:01am PST on chosen day",
+      "completed": false,
+      "created_at": "2026-02-27T21:00:00.000Z",
+      "completed_at": null
+    },
+    {
+      "id": 2,
+      "description": "Post first comment within 5 minutes of launch",
+      "completed": false,
+      "created_at": "2026-02-27T21:00:00.000Z",
+      "completed_at": null
+    },
+    {
+      "id": 3,
+      "description": "Respond to every comment throughout the day",
+      "completed": false,
+      "created_at": "2026-02-27T21:00:00.000Z",
+      "completed_at": null
+    },
+    {
+      "id": 4,
+      "description": "Share PH launch on Twitter, LinkedIn with link",
+      "completed": false,
+      "created_at": "2026-02-27T21:00:00.000Z",
+      "completed_at": null
+    }
+  ],
+  "created_at": "2026-02-27T21:00:00.000Z",
+  "updated_at": "2026-02-27T21:00:00.000Z",
+  "agent_assigned": false,
+  "rejection_reason": null,
+  "start_date": "2026-03-05T00:00:00.000Z",
+  "end_date": "2026-03-05T23:59:59.000Z"
+}

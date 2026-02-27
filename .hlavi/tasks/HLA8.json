@@ -1,0 +1,42 @@
+{
+  "id": "HLA8",
+  "title": "Create Twitter launch thread",
+  "description": "Write and post a 9-tweet thread announcing Hlavi. Include screenshots, highlight key features, share the story behind building it, and ask for feedback. Use hashtags: #buildinpublic #indiehacker #productivity",
+  "status": "open",
+  "acceptance_criteria": [
+    {
+      "id": 1,
+      "description": "Draft 9-tweet thread covering problem, solution, features, tech stack",
+      "completed": false,
+      "created_at": "2026-02-27T21:00:00.000Z",
+      "completed_at": null
+    },
+    {
+      "id": 2,
+      "description": "Attach 4-5 screenshots to relevant tweets",
+      "completed": false,
+      "created_at": "2026-02-27T21:00:00.000Z",
+      "completed_at": null
+    },
+    {
+      "id": 3,
+      "description": "Post thread and engage with replies for 24 hours",
+      "completed": false,
+      "created_at": "2026-02-27T21:00:00.000Z",
+      "completed_at": null
+    },
+    {
+      "id": 4,
+      "description": "Retweet with additional context at peak hours",
+      "completed": false,
+      "created_at": "2026-02-27T21:00:00.000Z",
+      "completed_at": null
+    }
+  ],
+  "created_at": "2026-02-27T21:00:00.000Z",
+  "updated_at": "2026-02-27T21:00:00.000Z",
+  "agent_assigned": false,
+  "rejection_reason": null,
+  "start_date": "2026-03-05T00:00:00.000Z",
+  "end_date": "2026-03-05T23:59:59.000Z"
+}

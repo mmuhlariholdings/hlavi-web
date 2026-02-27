@@ -1,0 +1,35 @@
+{
+  "id": "HLA11",
+  "title": "Submit to product directories",
+  "description": "Submit Hlavi to BetaList, Launching Next, SaaSHub, ToolScout, Uneed, MicroLaunch, and DevHunt. Each platform has different submission requirements.",
+  "status": "open",
+  "acceptance_criteria": [
+    {
+      "id": 1,
+      "description": "Submit to BetaList and Launching Next",
+      "completed": false,
+      "created_at": "2026-02-27T21:00:00.000Z",
+      "completed_at": null
+    },
+    {
+      "id": 2,
+      "description": "Submit to SaaSHub and ToolScout",
+      "completed": false,
+      "created_at": "2026-02-27T21:00:00.000Z",
+      "completed_at": null
+    },
+    {
+      "id": 3,
+      "description": "Submit to Uneed, MicroLaunch, and DevHunt",
+      "completed": false,
+      "created_at": "2026-02-27T21:00:00.000Z",
+      "completed_at": null
+    }
+  ],
+  "created_at": "2026-02-27T21:00:00.000Z",
+  "updated_at": "2026-02-27T21:00:00.000Z",
+  "agent_assigned": false,
+  "rejection_reason": null,
+  "start_date": "2026-03-07T00:00:00.000Z",
+  "end_date": "2026-03-09T00:00:00.000Z"
+}

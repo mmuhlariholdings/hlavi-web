@@ -1,0 +1,42 @@
+{
+  "id": "HLA3",
+  "title": "Create demo video for Product Hunt",
+  "description": "Record a 30-90 second demo video showing: signing in with GitHub, selecting a repo, navigating between views, creating a task, and viewing timeline. No sound needed, use screen recording with smooth transitions.",
+  "status": "open",
+  "acceptance_criteria": [
+    {
+      "id": 1,
+      "description": "Script the key flow: login → select repo → show timeline → show board → create task",
+      "completed": false,
+      "created_at": "2026-02-27T21:00:00.000Z",
+      "completed_at": null
+    },
+    {
+      "id": 2,
+      "description": "Record screen at 1920x1080 with clean browser chrome",
+      "completed": false,
+      "created_at": "2026-02-27T21:00:00.000Z",
+      "completed_at": null
+    },
+    {
+      "id": 3,
+      "description": "Edit video with smooth transitions (keep under 90 seconds)",
+      "completed": false,
+      "created_at": "2026-02-27T21:00:00.000Z",
+      "completed_at": null
+    },
+    {
+      "id": 4,
+      "description": "Export as MP4 and upload to hosting (YouTube/Vimeo)",
+      "completed": false,
+      "created_at": "2026-02-27T21:00:00.000Z",
+      "completed_at": null
+    }
+  ],
+  "created_at": "2026-02-27T21:00:00.000Z",
+  "updated_at": "2026-02-27T21:00:00.000Z",
+  "agent_assigned": false,
+  "rejection_reason": null,
+  "start_date": "2026-03-01T00:00:00.000Z",
+  "end_date": "2026-03-03T00:00:00.000Z"
+}

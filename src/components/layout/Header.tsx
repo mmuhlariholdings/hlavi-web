@@ -12,8 +12,8 @@ export function Header() {
   const navItems = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/agenda", label: "Agenda", icon: CalendarCheck },
-    { href: "/timeline", label: "Timeline", icon: Calendar },
     { href: "/board", label: "Board", icon: Kanban },
+    { href: "/timeline", label: "Timeline", icon: Calendar },
   ];
 
   const closeMobileMenu = () => setMobileMenuOpen(false);

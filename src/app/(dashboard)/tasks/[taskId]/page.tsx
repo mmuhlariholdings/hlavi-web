@@ -5,6 +5,7 @@ import { useTask } from "@/hooks/useTasks";
 import { TaskDetail } from "@/components/tasks/TaskDetail";
 import { Loader2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { use } from "react";
 
 export default function TaskDetailPage({
@@ -14,6 +15,7 @@ export default function TaskDetailPage({
 }) {
   const { taskId } = use(params);
   const { owner, repo } = useRepository();
+  const router = useRouter();
   const { data, isLoading, error } = useTask(
     owner || "",
     repo || "",
@@ -47,13 +49,13 @@ export default function TaskDetailPage({
   if (error) {
     return (
       <div className="space-y-4">
-        <Link
-          href="/board"
+        <button
+          onClick={() => router.back()}
           className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to Board
-        </Link>
+          Back
+        </button>
         <div className="text-red-600 text-center py-12 bg-red-50 rounded-lg border border-red-200">
           Failed to load task. Please try again.
         </div>
@@ -64,13 +66,13 @@ export default function TaskDetailPage({
   if (!data?.task) {
     return (
       <div className="space-y-4">
-        <Link
-          href="/board"
+        <button
+          onClick={() => router.back()}
           className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to Board
-        </Link>
+          Back
+        </button>
         <div className="text-center py-12 bg-gray-50 rounded-lg border border-gray-200">
           Task not found
         </div>
@@ -80,13 +82,13 @@ export default function TaskDetailPage({
 
   return (
     <div className="space-y-4 md:space-y-6">
-      <Link
-        href="/board"
+      <button
+        onClick={() => router.back()}
         className="inline-flex items-center gap-2 text-sm md:text-base text-gray-600 hover:text-gray-900 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
-        <span>Back to Board</span>
-      </Link>
+        <span>Back</span>
+      </button>
 
       <div className="bg-white rounded-lg border border-gray-200 p-4 md:p-6 lg:p-8">
         <TaskDetail task={data.task} />

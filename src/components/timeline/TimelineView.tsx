@@ -132,7 +132,7 @@ export function TimelineView({ tasks }: TimelineViewProps) {
           year: "",
         },
       },
-      timeAxis: { scale: "day", step: 1 },
+      timeAxis: { scale: "day" as const, step: 1 },
     };
 
     // Create timeline

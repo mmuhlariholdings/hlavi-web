@@ -1,4 +1,5 @@
 import { GitHubLogo } from "@/components/landing/GitHubLogo";
+import { TextRotator } from "@/components/landing/TextRotator";
 import { ArrowRight, GitBranch, Shield, Zap, Calendar, Kanban, BarChart3 } from "lucide-react";
 import Link from "next/link";
 
@@ -197,7 +198,7 @@ export default function LandingPage() {
               </div>
               <h3 className="text-2xl font-bold mb-3">AI-Powered Execution</h3>
               <p className="text-blue-100 mb-4">
-                Select your preferred AI model or run in auto mode. Agents autonomously work through tasks, checking off acceptance criteria as they complete each requirement.
+                Select your preferred AI model or run in auto mode. Agents autonomously work through tasks—from coding to research to content creation—checking off acceptance criteria as they complete each requirement.
               </p>
               <div className="bg-gray-900/50 rounded-lg p-4 font-mono text-sm">
                 <span className="text-blue-300">$</span> hlavi agent --task HLA1 --model auto
@@ -211,7 +212,7 @@ export default function LandingPage() {
               </div>
               <h3 className="text-2xl font-bold mb-3">Seamless Repo Integration</h3>
               <p className="text-blue-100 mb-4">
-                Initialize Hlavi in any existing project with a single command. Create tasks that directly modify your repository with every change tracked in git.
+                Initialize Hlavi in any existing project—code repositories, research papers, documentation sites, or content projects. Create tasks that directly modify files with every change tracked in git.
               </p>
               <div className="bg-gray-900/50 rounded-lg p-4 font-mono text-sm">
                 <span className="text-blue-300">$</span> hlavi init
@@ -223,27 +224,34 @@ export default function LandingPage() {
 
           {/* Use Cases */}
           <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
-            <h3 className="text-2xl font-bold mb-6 text-center">From Task Manager to Development Team</h3>
-            <div className="grid md:grid-cols-3 gap-6">
+            <h3 className="text-2xl font-bold mb-6 text-center">Endless Possibilities for Automation</h3>
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
               <div>
-                <div className="text-3xl mb-2">📋</div>
-                <h4 className="font-bold mb-2">Basic Task Management</h4>
+                <div className="text-3xl mb-2">💻</div>
+                <h4 className="font-bold mb-2">Software Development</h4>
                 <p className="text-sm text-blue-100">
-                  Use Hlavi CLI for simple task tracking and manual execution across your team.
+                  Build features, fix bugs, write tests, and deploy automatically with agent-driven development.
                 </p>
               </div>
               <div>
-                <div className="text-3xl mb-2">🔄</div>
-                <h4 className="font-bold mb-2">Automated Workflows</h4>
+                <div className="text-3xl mb-2">📊</div>
+                <h4 className="font-bold mb-2">Research & Analysis</h4>
                 <p className="text-sm text-blue-100">
-                  Let agents handle repetitive tasks like testing, refactoring, and documentation.
+                  Automate data collection, analysis, report generation, and literature reviews.
                 </p>
               </div>
               <div>
-                <div className="text-3xl mb-2">🚀</div>
-                <h4 className="font-bold mb-2">Full Development Team</h4>
+                <div className="text-3xl mb-2">✍️</div>
+                <h4 className="font-bold mb-2">Content Creation</h4>
                 <p className="text-sm text-blue-100">
-                  Deploy to Vercel or similar platforms and watch agents build features in real-time.
+                  Generate documentation, blog posts, marketing copy, and maintain content calendars.
+                </p>
+              </div>
+              <div>
+                <div className="text-3xl mb-2">🔧</div>
+                <h4 className="font-bold mb-2">DevOps & Infrastructure</h4>
+                <p className="text-sm text-blue-100">
+                  Automate deployments, infrastructure updates, monitoring setup, and incident response.
                 </p>
               </div>
             </div>
@@ -251,7 +259,23 @@ export default function LandingPage() {
 
           <div className="text-center mt-12">
             <p className="text-lg text-blue-100 mb-4">
-              Imagine creating a task for your Next.js app, and watching an AI agent implement it, run tests, and deploy—all while you track progress in real-time.
+              Imagine creating a task for{" "}
+              <TextRotator
+                texts={[
+                  "your Next.js app",
+                  "your React application",
+                  "your Python API",
+                  "your mobile app",
+                  "your research paper",
+                  "your documentation",
+                  "your e-commerce site",
+                  "your data analysis",
+                  "your content strategy",
+                  "your SaaS platform",
+                ]}
+                className="font-semibold text-white"
+              />
+              , and watching an AI agent work through it autonomously—all while you track progress in real-time.
             </p>
             <p className="text-sm text-blue-200">
               CLI integration coming soon. Stay tuned for autonomous task execution.

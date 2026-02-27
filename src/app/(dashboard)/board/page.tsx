@@ -4,7 +4,7 @@ import { useRepository } from "@/contexts/RepositoryContext";
 import { useTasks } from "@/hooks/useTasks";
 import { useBoardConfig } from "@/hooks/useBoardConfig";
 import { KanbanBoard } from "@/components/board/KanbanBoard";
-import { Loader2 } from "lucide-react";
+import { KanbanColumnSkeleton } from "@/components/ui/Skeleton";
 import Link from "next/link";
 
 export default function BoardPage() {
@@ -36,8 +36,19 @@ export default function BoardPage() {
 
   if (tasksLoading || configLoading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold mb-2">Kanban Board</h1>
+          <p className="text-sm md:text-base text-gray-600">
+            Organize and track your tasks by status
+          </p>
+        </div>
+        <div className="flex flex-col md:flex-row gap-4 md:overflow-x-auto md:pb-4 -mx-4 px-4 md:mx-0">
+          <KanbanColumnSkeleton />
+          <KanbanColumnSkeleton />
+          <KanbanColumnSkeleton />
+          <KanbanColumnSkeleton />
+        </div>
       </div>
     );
   }

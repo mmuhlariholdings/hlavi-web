@@ -4,10 +4,11 @@ import { RepoSelector } from "@/components/dashboard/RepoSelector";
 import { useRepository } from "@/contexts/RepositoryContext";
 import { useTasks } from "@/hooks/useTasks";
 import { CheckCircle2, Clock, AlertCircle, BarChart3 } from "lucide-react";
+import { StatsCardSkeleton } from "@/components/ui/Skeleton";
 
 export default function DashboardPage() {
   const { owner, repo } = useRepository();
-  const { data } = useTasks(owner || "", repo || "");
+  const { data, isLoading } = useTasks(owner || "", repo || "");
 
   const tasks = data?.tasks || [];
 
@@ -32,7 +33,15 @@ export default function DashboardPage() {
         <div className="space-y-4 md:space-y-6">
           <div>
             <h2 className="text-lg md:text-xl font-semibold mb-3 md:mb-4">Task Overview</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+            {isLoading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+                <StatsCardSkeleton />
+                <StatsCardSkeleton />
+                <StatsCardSkeleton />
+                <StatsCardSkeleton />
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
               <div className="bg-white rounded-lg p-4 md:p-6 border border-gray-200">
                 <div className="flex items-center justify-between">
                   <div>
@@ -81,6 +90,7 @@ export default function DashboardPage() {
                 </div>
               </div>
             </div>
+            )}
           </div>
         </div>
       )}

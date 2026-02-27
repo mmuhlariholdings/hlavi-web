@@ -3,7 +3,7 @@
 import { useRepository } from "@/contexts/RepositoryContext";
 import { useTasks } from "@/hooks/useTasks";
 import { TimelineView } from "@/components/timeline/TimelineView";
-import { Loader2 } from "lucide-react";
+import { TimelineSkeleton } from "@/components/ui/Skeleton";
 import Link from "next/link";
 
 export default function TimelinePage() {
@@ -28,8 +28,14 @@ export default function TimelinePage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold mb-2">Timeline View</h1>
+          <p className="text-sm md:text-base text-gray-600">
+            Gantt chart visualization of tasks with dates
+          </p>
+        </div>
+        <TimelineSkeleton />
       </div>
     );
   }

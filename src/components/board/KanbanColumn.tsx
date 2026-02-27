@@ -18,7 +18,7 @@ export function KanbanColumn({
   return (
     <div className="w-full md:flex-shrink-0 md:w-80">
       <div className="bg-gray-100 rounded-lg p-4">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-3">
           <h3 className="font-semibold text-lg">{column.name}</h3>
           <div className="flex items-center gap-2">
             <span className="bg-gray-200 rounded-full px-3 py-1 text-sm font-medium">
@@ -40,6 +40,10 @@ export function KanbanColumn({
             )}
           </div>
         </div>
+
+        {/* Separator */}
+        <div className="border-t border-gray-300 mb-3" />
+
         <div
           className={`space-y-3 transition-all duration-300 ease-in-out overflow-hidden ${
             isCollapsed ? "max-h-0 opacity-0" : "max-h-[5000px] opacity-100"

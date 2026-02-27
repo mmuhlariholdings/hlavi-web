@@ -98,4 +98,46 @@ export class GitHubService {
     }
     return null;
   }
+
+  async updateTask(
+    owner: string,
+    repo: string,
+    taskId: string,
+    updates: Partial<Task>
+  ): Promise<Task> {
+    // Get current file to retrieve SHA (required for updates)
+    const { data: currentFile } = await this.octokit.repos.getContent({
+      owner,
+      repo,
+      path: `.hlavi/tasks/${taskId}.json`,
+    });
+
+    if (!("sha" in currentFile)) {
+      throw new Error("File not found");
+    }
+
+    // Get current task data
+    const currentTask = await this.getTask(owner, repo, taskId);
+
+    // Merge updates with current task data
+    const updatedTask: Task = {
+      ...currentTask,
+      ...updates,
+      updated_at: new Date().toISOString(),
+    };
+
+    // Write back to GitHub
+    await this.octokit.repos.createOrUpdateFileContents({
+      owner,
+      repo,
+      path: `.hlavi/tasks/${taskId}.json`,
+      message: `Update task ${taskId}`,
+      content: Buffer.from(JSON.stringify(updatedTask, null, 2)).toString(
+        "base64"
+      ),
+      sha: currentFile.sha,
+    });
+
+    return updatedTask;
+  }
 }

@@ -264,14 +264,8 @@ export function TimelineView({ tasks }: TimelineViewProps) {
         </div>
       </div>
 
-      {/* Timeline */}
-      <div className="border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm">
-        <div ref={timelineRef} className="w-full overflow-x-auto p-4" />
-      </div>
-
       {/* Legend */}
-      <div className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
-        <h3 className="text-sm font-semibold text-gray-700 mb-3">Status Legend</h3>
+      <div className="p-3 bg-white border border-gray-200 rounded-lg shadow-sm">
         <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3">
           {Object.entries(STATUS_CONFIG).map(([key, config]) => (
             <div key={key} className="flex items-center gap-2">
@@ -286,6 +280,11 @@ export function TimelineView({ tasks }: TimelineViewProps) {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Timeline */}
+      <div className="border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm">
+        <div ref={timelineRef} className="w-full overflow-x-auto p-4" />
       </div>
 
       {/* Custom Styles */}

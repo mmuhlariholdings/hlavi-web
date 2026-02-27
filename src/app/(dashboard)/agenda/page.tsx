@@ -64,6 +64,14 @@ export default function AgendaPage() {
     };
   }, [data, selectedDate]);
 
+  // Check if there are any tasks for this period
+  const hasAnyTasks =
+    filteredTasks.starting.length > 0 ||
+    filteredTasks.due.length > 0 ||
+    filteredTasks.inProgress.length > 0 ||
+    filteredTasks.overdue.length > 0 ||
+    filteredTasks.noDates.length > 0;
+
   if (!owner || !repo) {
     return (
       <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
@@ -122,53 +130,67 @@ export default function AgendaPage() {
 
       <DateSelector selectedDate={selectedDate} onDateChange={setSelectedDate} />
 
-      <div className="space-y-4">
-        {/* Overdue Tasks */}
-        {filteredTasks.overdue.length > 0 && (
-          <AgendaSection
-            title="Overdue"
-            tasks={filteredTasks.overdue}
-            icon={<AlertTriangle className="w-5 h-5 text-orange-600" />}
-            variant="warning"
-            emptyMessage="No overdue tasks"
-          />
-        )}
+      {!hasAnyTasks ? (
+        <div className="text-center py-16 bg-gray-50 rounded-lg border border-gray-200">
+          <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            No tasks for {format(selectedDate, "MMMM d, yyyy")}
+          </h3>
+          <p className="text-sm text-gray-600 max-w-md mx-auto">
+            There are no tasks scheduled for this period. Try selecting a different
+            date or create new tasks in your repository.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {/* Overdue Tasks */}
+          {filteredTasks.overdue.length > 0 && (
+            <AgendaSection
+              title="Overdue"
+              tasks={filteredTasks.overdue}
+              icon={<AlertTriangle className="w-5 h-5 text-orange-600" />}
+              variant="warning"
+            />
+          )}
 
-        {/* Starting Today */}
-        <AgendaSection
-          title="Starting Today"
-          tasks={filteredTasks.starting}
-          icon={<PlayCircle className="w-5 h-5 text-blue-600" />}
-          emptyMessage="No tasks starting today"
-        />
+          {/* Starting Today */}
+          {filteredTasks.starting.length > 0 && (
+            <AgendaSection
+              title="Starting Today"
+              tasks={filteredTasks.starting}
+              icon={<PlayCircle className="w-5 h-5 text-blue-600" />}
+            />
+          )}
 
-        {/* Due Today */}
-        <AgendaSection
-          title="Due Today"
-          tasks={filteredTasks.due}
-          icon={<CheckCircle2 className="w-5 h-5 text-green-600" />}
-          variant="success"
-          emptyMessage="No tasks due today"
-        />
+          {/* Due Today */}
+          {filteredTasks.due.length > 0 && (
+            <AgendaSection
+              title="Due Today"
+              tasks={filteredTasks.due}
+              icon={<CheckCircle2 className="w-5 h-5 text-green-600" />}
+              variant="success"
+            />
+          )}
 
-        {/* In Progress */}
-        <AgendaSection
-          title="In Progress"
-          tasks={filteredTasks.inProgress}
-          icon={<Clock className="w-5 h-5 text-yellow-600" />}
-          emptyMessage="No tasks in progress"
-        />
+          {/* In Progress */}
+          {filteredTasks.inProgress.length > 0 && (
+            <AgendaSection
+              title="In Progress"
+              tasks={filteredTasks.inProgress}
+              icon={<Clock className="w-5 h-5 text-yellow-600" />}
+            />
+          )}
 
-        {/* Tasks Without Dates */}
-        {filteredTasks.noDates.length > 0 && (
-          <AgendaSection
-            title="Tasks Without Dates"
-            tasks={filteredTasks.noDates}
-            icon={<Calendar className="w-5 h-5 text-gray-600" />}
-            emptyMessage="All tasks have dates"
-          />
-        )}
-      </div>
+          {/* Tasks Without Dates */}
+          {filteredTasks.noDates.length > 0 && (
+            <AgendaSection
+              title="Tasks Without Dates"
+              tasks={filteredTasks.noDates}
+              icon={<Calendar className="w-5 h-5 text-gray-600" />}
+            />
+          )}
+        </div>
+      )}
     </div>
   );
 }

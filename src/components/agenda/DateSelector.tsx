@@ -2,14 +2,14 @@
 
 import { useState } from "react";
 import { Calendar as CalendarIcon, CalendarDays } from "lucide-react";
-import { format, startOfWeek, startOfMonth } from "date-fns";
+import { format, startOfWeek, startOfMonth, startOfYear } from "date-fns";
 
 interface DateSelectorProps {
   selectedDate: Date;
   onDateChange: (date: Date) => void;
 }
 
-type QuickSelectOption = "today" | "tomorrow" | "week" | "month" | "custom";
+type QuickSelectOption = "today" | "tomorrow" | "week" | "month" | "year" | "custom";
 
 export function DateSelector({ selectedDate, onDateChange }: DateSelectorProps) {
   const [selectedOption, setSelectedOption] = useState<QuickSelectOption>("today");
@@ -33,6 +33,9 @@ export function DateSelector({ selectedDate, onDateChange }: DateSelectorProps) 
       case "month":
         onDateChange(startOfMonth(now));
         break;
+      case "year":
+        onDateChange(startOfYear(now));
+        break;
       case "custom":
         // User will use date picker
         break;
@@ -53,6 +56,7 @@ export function DateSelector({ selectedDate, onDateChange }: DateSelectorProps) 
           <option value="tomorrow">Tomorrow</option>
           <option value="week">This Week</option>
           <option value="month">This Month</option>
+          <option value="year">This Year</option>
           <option value="custom">Custom Date</option>
         </select>
       </div>

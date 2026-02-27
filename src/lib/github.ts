@@ -219,7 +219,47 @@ export class GitHubService {
   }
 
   async initializeHlavi(owner: string, repo: string): Promise<void> {
-    // Default board configuration
+    const now = new Date().toISOString();
+    const weekFromNow = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+
+    // Example task with all fields populated
+    const exampleTask: Task = {
+      id: "HLA1",
+      title: "Welcome to Hlavi",
+      description: "This is an example task to help you get started with Hlavi. You can edit or delete this task, and create new ones using the dashboard.",
+      status: "open",
+      acceptance_criteria: [
+        {
+          id: 1,
+          description: "Explore the dashboard and different views (Timeline, Board, Agenda)",
+          completed: false,
+          created_at: now,
+          completed_at: null,
+        },
+        {
+          id: 2,
+          description: "Try editing this task to understand the workflow",
+          completed: false,
+          created_at: now,
+          completed_at: null,
+        },
+        {
+          id: 3,
+          description: "Create your first real task for your project",
+          completed: false,
+          created_at: now,
+          completed_at: null,
+        },
+      ],
+      created_at: now,
+      updated_at: now,
+      agent_assigned: false,
+      rejection_reason: null,
+      start_date: now,
+      end_date: weekFromNow,
+    };
+
+    // Board configuration with the example task
     const defaultBoard: Board = {
       config: {
         name: "Default Board",
@@ -231,26 +271,11 @@ export class GitHubService {
           { name: "Done", status: "done", agent_enabled: false, agent_mode: null },
         ],
       },
-      tasks: {},
-      next_task_number: 1,
+      tasks: {
+        "HLA1": "open",
+      },
+      next_task_number: 2,
     };
-
-    // README content
-    const readmeContent = `# Hlavi Task Management
-
-This directory contains your Hlavi task management files.
-
-## Structure
-
-- \`tasks/\` - Individual task files stored as JSON
-- \`board.json\` - Board configuration for kanban view
-
-## Usage
-
-Use the Hlavi web interface or CLI to manage your tasks.
-
-Learn more at: https://mmuhlariholdings.github.io/hlavi/
-`;
 
     try {
       // Create board.json
@@ -262,22 +287,13 @@ Learn more at: https://mmuhlariholdings.github.io/hlavi/
         content: Buffer.from(JSON.stringify(defaultBoard, null, 2)).toString("base64"),
       });
 
-      // Create README.md
+      // Create example task
       await this.octokit.repos.createOrUpdateFileContents({
         owner,
         repo,
-        path: ".hlavi/README.md",
-        message: "Initialize Hlavi: Add README",
-        content: Buffer.from(readmeContent).toString("base64"),
-      });
-
-      // Create tasks/.gitkeep to ensure the directory exists
-      await this.octokit.repos.createOrUpdateFileContents({
-        owner,
-        repo,
-        path: ".hlavi/tasks/.gitkeep",
-        message: "Initialize Hlavi: Create tasks directory",
-        content: Buffer.from("").toString("base64"),
+        path: ".hlavi/tasks/HLA1.json",
+        message: "Initialize Hlavi: Add example task",
+        content: Buffer.from(JSON.stringify(exampleTask, null, 2)).toString("base64"),
       });
     } catch (error) {
       console.error("Failed to initialize Hlavi:", error);

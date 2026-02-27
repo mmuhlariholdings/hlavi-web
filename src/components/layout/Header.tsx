@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Calendar, Kanban, Menu, X } from "lucide-react";
+import { LayoutDashboard, Calendar, CalendarCheck, Kanban, Menu, X } from "lucide-react";
 
 export function Header() {
   const pathname = usePathname();
@@ -11,6 +11,7 @@ export function Header() {
 
   const navItems = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/agenda", label: "Agenda", icon: CalendarCheck },
     { href: "/timeline", label: "Timeline", icon: Calendar },
     { href: "/board", label: "Board", icon: Kanban },
   ];

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRepositories } from "@/hooks/useRepositories";
 import { useRepository } from "@/contexts/RepositoryContext";
 import { useInitializeHlavi } from "@/hooks/useInitializeHlavi";
+import { useBranches } from "@/hooks/useBranches";
 import { BranchSelector } from "./BranchSelector";
 import { GitBranch, Loader2, AlertCircle, CheckCircle2, Sparkles } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -31,6 +32,7 @@ export function RepoSelector() {
     owner: string;
     repo: string;
   } | null>(null);
+  const [initBranch, setInitBranch] = useState<string>("");
 
   // Check if selected repo has .hlavi
   const { data: hlaviCheck, isLoading: isCheckingHlavi } = useCheckHlavi(
@@ -38,18 +40,31 @@ export function RepoSelector() {
     pendingSelection?.repo || repo || ""
   );
 
+  // Fetch branches for pending selection (for initialization)
+  const { data: branchesData } = useBranches(
+    pendingSelection?.owner || "",
+    pendingSelection?.repo || ""
+  );
+
+  // Auto-select default branch when pending selection changes
+  useEffect(() => {
+    if (pendingSelection && branchesData?.defaultBranch) {
+      setInitBranch(branchesData.defaultBranch);
+    }
+  }, [pendingSelection, branchesData?.defaultBranch]);
+
   // Update repository once validation passes, or clear if validation fails
   useEffect(() => {
     if (pendingSelection && hlaviCheck !== undefined && !isCheckingHlavi) {
       if (hlaviCheck?.hasHlavi) {
-        setRepository(pendingSelection.owner, pendingSelection.repo);
+        setRepository(pendingSelection.owner, pendingSelection.repo, initBranch || undefined);
         setPendingSelection(null);
       } else {
         // Clear the repository context when selected repo doesn't have Hlavi
         clearRepository();
       }
     }
-  }, [pendingSelection, hlaviCheck, isCheckingHlavi, setRepository, clearRepository]);
+  }, [pendingSelection, hlaviCheck, isCheckingHlavi, setRepository, clearRepository, initBranch]);
 
   if (isLoading) {
     return (
@@ -101,11 +116,12 @@ export function RepoSelector() {
   };
 
   const handleInitialize = async () => {
-    if (!pendingSelection) return;
+    if (!pendingSelection || !initBranch) return;
 
     await initializeHlavi.mutateAsync({
       owner: pendingSelection.owner,
       repo: pendingSelection.repo,
+      branch: initBranch,
     });
   };
 
@@ -141,37 +157,60 @@ export function RepoSelector() {
         </div>
       )}
 
-      {showWarning && (
+      {showWarning && pendingSelection && (
         <div className="bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4">
           <div className="flex items-start gap-3">
             <Sparkles className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
             <div className="flex-1">
               <p className="font-semibold text-gray-900 mb-1">
-                Initialize Hlavi in this repository
+                Initialize Hlavi in <span className="text-blue-600">{pendingSelection.owner}/{pendingSelection.repo}</span>
               </p>
               <p className="text-sm text-gray-600 mb-3">
                 This repository doesn't have a <code className="text-xs bg-white px-1.5 py-0.5 rounded border border-gray-200">.hlavi</code> directory yet.
-                Add Hlavi to get started with git-based task management.
+                Initialize Hlavi to get started with git-based task management.
               </p>
+
+              {/* Branch Selection for Initialization */}
+              {branchesData && branchesData.branches.length > 0 && (
+                <div className="mb-3">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Select branch to initialize
+                  </label>
+                  <select
+                    value={initBranch}
+                    onChange={(e) => setInitBranch(e.target.value)}
+                    disabled={initializeHlavi.isPending}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-sm"
+                  >
+                    {branchesData.branches.map((branch) => (
+                      <option key={branch.name} value={branch.name}>
+                        {branch.name}
+                        {branch.name === branchesData.defaultBranch && " (default)"}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               <button
                 onClick={handleInitialize}
-                disabled={initializeHlavi.isPending}
+                disabled={initializeHlavi.isPending || !initBranch}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
               >
                 {initializeHlavi.isPending ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Initializing...
+                    Initializing on {initBranch}...
                   </>
                 ) : (
                   <>
                     <Sparkles className="w-4 h-4" />
-                    Initialize Hlavi
+                    Initialize on {initBranch}
                   </>
                 )}
               </button>
               <p className="text-xs text-gray-500 mt-2">
-                This will create the <code className="bg-white px-1 py-0.5 rounded border border-gray-200">.hlavi</code> directory with default configuration
+                This will create the <code className="bg-white px-1 py-0.5 rounded border border-gray-200">.hlavi</code> directory with default configuration on the selected branch
               </p>
             </div>
           </div>

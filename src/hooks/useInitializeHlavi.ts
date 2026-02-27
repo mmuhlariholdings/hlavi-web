@@ -30,7 +30,12 @@ export function useInitializeHlavi() {
     onSuccess: (data, variables) => {
       // Invalidate the hlavi check query to refresh the status
       queryClient.invalidateQueries({
-        queryKey: ["check-hlavi", variables.owner, variables.repo, variables.branch],
+        queryKey: ["check-hlavi", variables.owner, variables.repo],
+      });
+
+      // Invalidate branches query to refresh branch list
+      queryClient.invalidateQueries({
+        queryKey: ["branches", variables.owner, variables.repo],
       });
 
       toast.success("Hlavi initialized successfully! 🎉");

@@ -43,6 +43,16 @@ export function useInitializeHlavi() {
         queryKey: ["branches", variables.owner, variables.repo],
       });
 
+      // Invalidate tasks query to load the default task immediately
+      queryClient.invalidateQueries({
+        queryKey: ["tasks", variables.owner, variables.repo, variables.branch],
+      });
+
+      // Invalidate board config query to load the default board configuration
+      queryClient.invalidateQueries({
+        queryKey: ["board-config", variables.owner, variables.repo, variables.branch],
+      });
+
       toast.success("Hlavi initialized successfully! 🎉");
     },
     onError: (error: Error) => {

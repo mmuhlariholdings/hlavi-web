@@ -1,19 +1,32 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Timeline } from "vis-timeline/standalone";
 import "vis-timeline/styles/vis-timeline-graph2d.css";
 import { Task } from "@/lib/types";
 import { useRouter } from "next/navigation";
+import { Calendar, CalendarDays, CalendarRange, Maximize2 } from "lucide-react";
+import { format } from "date-fns";
 
 interface TimelineViewProps {
   tasks: Task[];
 }
 
+const STATUS_CONFIG = {
+  new: { color: "#e5e7eb", borderColor: "#9ca3af", label: "New" },
+  open: { color: "#dbeafe", borderColor: "#3b82f6", label: "Open" },
+  inprogress: { color: "#fef3c7", borderColor: "#f59e0b", label: "In Progress" },
+  pending: { color: "#fed7aa", borderColor: "#f97316", label: "Pending" },
+  review: { color: "#ede9fe", borderColor: "#8b5cf6", label: "Review" },
+  done: { color: "#d1fae5", borderColor: "#10b981", label: "Done" },
+  closed: { color: "#f3f4f6", borderColor: "#6b7280", label: "Closed" },
+};
+
 export function TimelineView({ tasks }: TimelineViewProps) {
   const timelineRef = useRef<HTMLDivElement>(null);
   const timelineInstance = useRef<Timeline | null>(null);
   const router = useRouter();
+  const [activeZoom, setActiveZoom] = useState<string>("all");
 
   useEffect(() => {
     if (!timelineRef.current) return;
@@ -27,7 +40,7 @@ export function TimelineView({ tasks }: TimelineViewProps) {
       return;
     }
 
-    // Prepare data items
+    // Prepare data items with custom HTML content
     const items = tasksWithDates.map((task) => {
       const startDate = task.start_date
         ? new Date(task.start_date)
@@ -41,31 +54,85 @@ export function TimelineView({ tasks }: TimelineViewProps) {
         ? new Date(task.start_date)
         : new Date();
 
+      const completedAC = task.acceptance_criteria.filter((ac) => ac.completed).length;
+      const totalAC = task.acceptance_criteria.length;
+      const progress = totalAC > 0 ? (completedAC / totalAC) * 100 : 0;
+
+      const statusConfig = STATUS_CONFIG[task.status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.new;
+
       return {
         id: task.id,
-        content: `${task.id}: ${task.title}`,
+        content: `
+          <div style="padding: 4px 8px; font-size: 13px; font-weight: 500; color: #1f2937;">
+            <div style="margin-bottom: 2px;">${task.id}</div>
+            <div style="font-size: 11px; font-weight: 400; color: #6b7280; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;">${task.title}</div>
+            ${totalAC > 0 ? `
+              <div style="margin-top: 4px; height: 3px; background: rgba(0,0,0,0.1); border-radius: 2px; overflow: hidden;">
+                <div style="height: 100%; background: ${statusConfig.borderColor}; width: ${progress}%; transition: width 0.3s;"></div>
+              </div>
+            ` : ''}
+          </div>
+        `,
         start: startDate,
         end: endDate,
         className: `status-${task.status}`,
-        title: `${task.id}: ${task.title}\nStatus: ${task.status}\nAC: ${
-          task.acceptance_criteria.filter((ac) => ac.completed).length
-        }/${task.acceptance_criteria.length}`,
+        title: `
+          <div style="padding: 8px; min-width: 200px;">
+            <div style="font-weight: 600; font-size: 14px; margin-bottom: 4px; color: #111827;">${task.id}: ${task.title}</div>
+            <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+              <div style="margin-bottom: 2px;"><strong>Status:</strong> ${statusConfig.label}</div>
+              <div style="margin-bottom: 2px;"><strong>Start:</strong> ${format(startDate, "MMM d, yyyy")}</div>
+              <div style="margin-bottom: 2px;"><strong>End:</strong> ${format(endDate, "MMM d, yyyy")}</div>
+            </div>
+            ${totalAC > 0 ? `
+              <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e5e7eb;">
+                <div style="font-size: 12px; color: #6b7280; margin-bottom: 4px;">
+                  <strong>Progress:</strong> ${completedAC}/${totalAC} criteria completed
+                </div>
+                <div style="height: 6px; background: #f3f4f6; border-radius: 3px; overflow: hidden;">
+                  <div style="height: 100%; background: ${statusConfig.borderColor}; width: ${progress}%; transition: width 0.3s;"></div>
+                </div>
+              </div>
+            ` : ''}
+          </div>
+        `,
       };
     });
 
-    // Timeline options
+    // Enhanced timeline options
     const options = {
       stack: true,
       horizontalScroll: true,
       zoomKey: "ctrlKey" as const,
       maxHeight: "600px",
+      minHeight: "400px",
       orientation: "top" as const,
       tooltip: {
         followMouse: true,
+        overflowMethod: "cap" as const,
       },
       margin: {
-        item: 10,
+        item: {
+          horizontal: 10,
+          vertical: 8,
+        },
       },
+      editable: false,
+      selectable: true,
+      showCurrentTime: true,
+      format: {
+        minorLabels: {
+          day: "D",
+          month: "MMM",
+          year: "YYYY",
+        },
+        majorLabels: {
+          day: "MMMM YYYY",
+          month: "YYYY",
+          year: "",
+        },
+      },
+      timeAxis: { scale: "day", step: 1 },
     };
 
     // Create timeline
@@ -94,11 +161,43 @@ export function TimelineView({ tasks }: TimelineViewProps) {
     (task) => task.start_date || task.end_date
   );
 
+  const handleZoom = (type: string) => {
+    if (!timelineInstance.current) return;
+    setActiveZoom(type);
+
+    const now = new Date();
+    let start: Date;
+    let end: Date;
+
+    switch (type) {
+      case "today":
+        start = new Date(now.setHours(0, 0, 0, 0));
+        end = new Date(now.setHours(23, 59, 59, 999));
+        break;
+      case "week":
+        start = new Date(now.setDate(now.getDate() - now.getDay()));
+        end = new Date(now.setDate(now.getDate() - now.getDay() + 6));
+        break;
+      case "month":
+        start = new Date(now.getFullYear(), now.getMonth(), 1);
+        end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        break;
+      case "all":
+        timelineInstance.current.fit();
+        return;
+      default:
+        return;
+    }
+
+    timelineInstance.current.setWindow(start, end, { animation: true });
+  };
+
   if (tasksWithDates.length === 0) {
     return (
-      <div className="flex items-center justify-center h-96 bg-gray-50 rounded-lg border border-gray-200">
+      <div className="flex items-center justify-center h-96 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg border border-gray-200 shadow-sm">
         <div className="text-center">
-          <p className="text-lg font-medium text-gray-700">No tasks with dates found</p>
+          <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+          <p className="text-lg font-semibold text-gray-700">No tasks with dates found</p>
           <p className="text-sm text-gray-500 mt-2">
             Tasks need start_date or end_date to appear on the timeline
           </p>
@@ -109,43 +208,177 @@ export function TimelineView({ tasks }: TimelineViewProps) {
 
   return (
     <div className="space-y-4">
-      <div className="border rounded-lg overflow-hidden bg-white">
-        <div ref={timelineRef} className="w-full overflow-x-auto p-2 md:p-4" />
+      {/* Controls Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
+        <div className="flex items-center gap-2 text-sm text-gray-600">
+          <CalendarRange className="w-4 h-4 text-gray-400" />
+          <span className="font-medium">{tasksWithDates.length} tasks on timeline</span>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs text-gray-500 hidden sm:inline">Zoom:</span>
+          <button
+            onClick={() => handleZoom("today")}
+            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+              activeZoom === "today"
+                ? "bg-blue-100 text-blue-700 border border-blue-300"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300"
+            }`}
+          >
+            <Calendar className="w-3 h-3 inline mr-1" />
+            Today
+          </button>
+          <button
+            onClick={() => handleZoom("week")}
+            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+              activeZoom === "week"
+                ? "bg-blue-100 text-blue-700 border border-blue-300"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300"
+            }`}
+          >
+            <CalendarDays className="w-3 h-3 inline mr-1" />
+            This Week
+          </button>
+          <button
+            onClick={() => handleZoom("month")}
+            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+              activeZoom === "month"
+                ? "bg-blue-100 text-blue-700 border border-blue-300"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300"
+            }`}
+          >
+            <CalendarRange className="w-3 h-3 inline mr-1" />
+            This Month
+          </button>
+          <button
+            onClick={() => handleZoom("all")}
+            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+              activeZoom === "all"
+                ? "bg-blue-100 text-blue-700 border border-blue-300"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300"
+            }`}
+          >
+            <Maximize2 className="w-3 h-3 inline mr-1" />
+            Fit All
+          </button>
+        </div>
       </div>
+
+      {/* Timeline */}
+      <div className="border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm">
+        <div ref={timelineRef} className="w-full overflow-x-auto p-4" />
+      </div>
+
+      {/* Legend */}
+      <div className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
+        <h3 className="text-sm font-semibold text-gray-700 mb-3">Status Legend</h3>
+        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3">
+          {Object.entries(STATUS_CONFIG).map(([key, config]) => (
+            <div key={key} className="flex items-center gap-2">
+              <div
+                className="w-4 h-4 rounded border-2 shadow-sm"
+                style={{
+                  backgroundColor: config.color,
+                  borderColor: config.borderColor,
+                }}
+              />
+              <span className="text-xs text-gray-600 font-medium">{config.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Custom Styles */}
       <style jsx global>{`
         .vis-item.status-new {
-          background-color: #e5e7eb;
-          border-color: #d1d5db;
+          background-color: ${STATUS_CONFIG.new.color};
+          border-color: ${STATUS_CONFIG.new.borderColor};
+          border-width: 2px;
+          border-radius: 6px;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
         .vis-item.status-open {
-          background-color: #93c5fd;
-          border-color: #3b82f6;
+          background-color: ${STATUS_CONFIG.open.color};
+          border-color: ${STATUS_CONFIG.open.borderColor};
+          border-width: 2px;
+          border-radius: 6px;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
         .vis-item.status-inprogress {
-          background-color: #fbbf24;
-          border-color: #f59e0b;
+          background-color: ${STATUS_CONFIG.inprogress.color};
+          border-color: ${STATUS_CONFIG.inprogress.borderColor};
+          border-width: 2px;
+          border-radius: 6px;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
         .vis-item.status-pending {
-          background-color: #fb923c;
-          border-color: #f97316;
+          background-color: ${STATUS_CONFIG.pending.color};
+          border-color: ${STATUS_CONFIG.pending.borderColor};
+          border-width: 2px;
+          border-radius: 6px;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
         .vis-item.status-review {
-          background-color: #a78bfa;
-          border-color: #8b5cf6;
+          background-color: ${STATUS_CONFIG.review.color};
+          border-color: ${STATUS_CONFIG.review.borderColor};
+          border-width: 2px;
+          border-radius: 6px;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
         .vis-item.status-done {
-          background-color: #86efac;
-          border-color: #22c55e;
+          background-color: ${STATUS_CONFIG.done.color};
+          border-color: ${STATUS_CONFIG.done.borderColor};
+          border-width: 2px;
+          border-radius: 6px;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
         .vis-item.status-closed {
-          background-color: #9ca3af;
-          border-color: #6b7280;
+          background-color: ${STATUS_CONFIG.closed.color};
+          border-color: ${STATUS_CONFIG.closed.borderColor};
+          border-width: 2px;
+          border-radius: 6px;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
         .vis-item {
           cursor: pointer;
+          transition: all 0.2s ease;
         }
         .vis-item:hover {
-          filter: brightness(0.95);
+          transform: translateY(-1px);
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15) !important;
+          z-index: 100;
+        }
+        .vis-item.vis-selected {
+          box-shadow: 0 0 0 2px #3b82f6 !important;
+        }
+        .vis-tooltip {
+          background: white !important;
+          border: 1px solid #e5e7eb !important;
+          border-radius: 8px !important;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+          color: #111827 !important;
+          font-family: inherit !important;
+          padding: 0 !important;
+        }
+        .vis-time-axis .vis-text {
+          color: #6b7280 !important;
+          font-size: 12px !important;
+        }
+        .vis-time-axis .vis-text.vis-major {
+          font-weight: 600 !important;
+        }
+        .vis-current-time {
+          background-color: #ef4444 !important;
+          width: 2px !important;
+        }
+        .vis-timeline {
+          border: none !important;
+          font-family: inherit !important;
+        }
+        .vis-panel.vis-center,
+        .vis-panel.vis-top,
+        .vis-panel.vis-bottom {
+          border-color: #e5e7eb !important;
         }
       `}</style>
     </div>

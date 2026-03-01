@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Task, BoardConfig } from "@/lib/types";
 import { KanbanColumn } from "./KanbanColumn";
 
@@ -13,6 +13,9 @@ export function KanbanBoard({ tasks, boardConfig }: KanbanBoardProps) {
   const [collapsedColumns, setCollapsedColumns] = useState<Set<string>>(
     new Set()
   );
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [showMoreLeft, setShowMoreLeft] = useState(false);
+  const [showMoreRight, setShowMoreRight] = useState(false);
 
   // Load collapsed state from localStorage on mount
   useEffect(() => {
@@ -35,6 +38,28 @@ export function KanbanBoard({ tasks, boardConfig }: KanbanBoardProps) {
     );
   }, [collapsedColumns]);
 
+  // Track horizontal scroll position to show indicators
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      const { scrollLeft, scrollWidth, clientWidth } = container;
+
+      // Show indicator if there's more content to the left (scrolled right at least 50px)
+      setShowMoreLeft(scrollLeft > 50);
+
+      // Show indicator if there's more content to the right (not at right edge)
+      setShowMoreRight(scrollLeft + clientWidth < scrollWidth - 50);
+    };
+
+    container.addEventListener("scroll", handleScroll);
+    // Initial check
+    handleScroll();
+
+    return () => container.removeEventListener("scroll", handleScroll);
+  }, [boardConfig]);
+
   const toggleColumn = (status: string) => {
     setCollapsedColumns((prev) => {
       const next = new Set(prev);
@@ -48,22 +73,37 @@ export function KanbanBoard({ tasks, boardConfig }: KanbanBoardProps) {
   };
 
   return (
-    <div className="flex flex-col md:flex-row gap-4 md:overflow-x-auto md:pb-4 -mx-4 px-4 md:mx-0 md:px-0">
-      {boardConfig.columns.map((column) => {
-        const columnTasks = tasks.filter(
-          (task) => task.status === column.status
-        );
+    <div className="relative">
+      {/* Indicator for more content to the left */}
+      {showMoreLeft && (
+        <div className="hidden md:block absolute left-0 top-0 bottom-0 w-1 bg-blue-500/30 z-10 pointer-events-none" />
+      )}
 
-        return (
-          <KanbanColumn
-            key={column.status}
-            column={column}
-            tasks={columnTasks}
-            isCollapsed={collapsedColumns.has(column.status)}
-            onToggleCollapse={() => toggleColumn(column.status)}
-          />
-        );
-      })}
+      {/* Indicator for more content to the right */}
+      {showMoreRight && (
+        <div className="hidden md:block absolute right-0 top-0 bottom-0 w-1 bg-blue-500/30 z-10 pointer-events-none" />
+      )}
+
+      <div
+        ref={scrollContainerRef}
+        className="flex flex-col md:flex-row gap-4 md:overflow-x-auto md:pb-4 -mx-4 px-4 md:mx-0 md:px-0"
+      >
+        {boardConfig.columns.map((column) => {
+          const columnTasks = tasks.filter(
+            (task) => task.status === column.status
+          );
+
+          return (
+            <KanbanColumn
+              key={column.status}
+              column={column}
+              tasks={columnTasks}
+              isCollapsed={collapsedColumns.has(column.status)}
+              onToggleCollapse={() => toggleColumn(column.status)}
+            />
+          );
+        })}
+      </div>
     </div>
   );
 }

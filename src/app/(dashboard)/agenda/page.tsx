@@ -240,12 +240,12 @@ export default function AgendaPage() {
       <div className="relative border-t border-gray-200 rounded-t-lg">
         {/* Indicator for more content above */}
         {showMoreAbove && (
-          <div className="absolute top-0 left-0 right-0 h-1 bg-blue-500/30 z-10 pointer-events-none" />
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gray-400/30 z-10 pointer-events-none" />
         )}
 
         {/* Indicator for more content below */}
         {showMoreBelow && (
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-blue-500/30 z-10 pointer-events-none" />
+          <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-400/30 z-10 pointer-events-none" />
         )}
 
         <div

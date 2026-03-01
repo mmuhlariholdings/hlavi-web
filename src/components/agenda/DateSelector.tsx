@@ -7,11 +7,12 @@ import { format, startOfWeek, startOfMonth, startOfYear } from "date-fns";
 interface DateSelectorProps {
   selectedDate: Date;
   onDateChange: (date: Date) => void;
+  onPeriodChange?: (period: "day" | "week" | "month" | "year") => void;
 }
 
 type QuickSelectOption = "today" | "tomorrow" | "week" | "month" | "year" | "custom";
 
-export function DateSelector({ selectedDate, onDateChange }: DateSelectorProps) {
+export function DateSelector({ selectedDate, onDateChange, onPeriodChange }: DateSelectorProps) {
   const [selectedOption, setSelectedOption] = useState<QuickSelectOption>("today");
 
   const handleQuickSelect = (option: QuickSelectOption) => {
@@ -21,22 +22,28 @@ export function DateSelector({ selectedDate, onDateChange }: DateSelectorProps) 
     switch (option) {
       case "today":
         onDateChange(now);
+        onPeriodChange?.("day");
         break;
       case "tomorrow":
         const tomorrow = new Date(now);
         tomorrow.setDate(tomorrow.getDate() + 1);
         onDateChange(tomorrow);
+        onPeriodChange?.("day");
         break;
       case "week":
         onDateChange(startOfWeek(now));
+        onPeriodChange?.("week");
         break;
       case "month":
         onDateChange(startOfMonth(now));
+        onPeriodChange?.("month");
         break;
       case "year":
         onDateChange(startOfYear(now));
+        onPeriodChange?.("year");
         break;
       case "custom":
+        onPeriodChange?.("day");
         // User will use date picker
         break;
     }

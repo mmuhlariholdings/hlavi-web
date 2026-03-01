@@ -168,30 +168,90 @@ export function TimelineView({ tasks }: TimelineViewProps) {
     const now = new Date();
     let start: Date;
     let end: Date;
+    let timeAxisConfig;
+    let formatConfig;
 
     switch (type) {
       case "day":
         start = new Date(now.setHours(0, 0, 0, 0));
         end = new Date(now.setHours(23, 59, 59, 999));
+        timeAxisConfig = { scale: "hour" as const, step: 1 };
+        formatConfig = {
+          minorLabels: {
+            hour: "HH:mm",
+          },
+          majorLabels: {
+            hour: "ddd D MMMM",
+          },
+        };
         break;
       case "week":
         start = new Date(now.setDate(now.getDate() - now.getDay()));
         end = new Date(now.setDate(now.getDate() - now.getDay() + 6));
+        timeAxisConfig = { scale: "day" as const, step: 1 };
+        formatConfig = {
+          minorLabels: {
+            day: "D",
+          },
+          majorLabels: {
+            day: "MMMM YYYY",
+          },
+        };
         break;
       case "month":
         start = new Date(now.getFullYear(), now.getMonth(), 1);
         end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        timeAxisConfig = { scale: "week" as const, step: 1 };
+        formatConfig = {
+          minorLabels: {
+            week: "w",
+          },
+          majorLabels: {
+            week: "MMMM YYYY",
+          },
+        };
         break;
       case "year":
         start = new Date(now.getFullYear(), 0, 1);
         end = new Date(now.getFullYear(), 11, 31);
+        timeAxisConfig = { scale: "month" as const, step: 1 };
+        formatConfig = {
+          minorLabels: {
+            month: "MMM",
+          },
+          majorLabels: {
+            month: "YYYY",
+          },
+        };
         break;
       case "overall":
         timelineInstance.current.fit();
+        // For overall, let vis-timeline auto-determine the best scale
+        timelineInstance.current.setOptions({
+          timeAxis: { scale: "day" as const, step: 1 },
+          format: {
+            minorLabels: {
+              day: "D",
+              month: "MMM",
+              year: "YYYY",
+            },
+            majorLabels: {
+              day: "MMMM YYYY",
+              month: "YYYY",
+              year: "",
+            },
+          },
+        });
         return;
       default:
         return;
     }
+
+    // Update time axis configuration and format
+    timelineInstance.current.setOptions({
+      timeAxis: timeAxisConfig,
+      format: formatConfig,
+    });
 
     timelineInstance.current.setWindow(start, end, { animation: true });
   };

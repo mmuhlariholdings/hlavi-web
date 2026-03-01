@@ -13,7 +13,7 @@ interface DateSelectorProps {
 type QuickSelectOption = "today" | "tomorrow" | "week" | "month" | "year" | "custom";
 
 export function DateSelector({ selectedDate, onDateChange, onPeriodChange }: DateSelectorProps) {
-  const [selectedOption, setSelectedOption] = useState<QuickSelectOption>("today");
+  const [selectedOption, setSelectedOption] = useState<QuickSelectOption>("year");
 
   const handleQuickSelect = (option: QuickSelectOption) => {
     setSelectedOption(option);
@@ -64,7 +64,7 @@ export function DateSelector({ selectedDate, onDateChange, onPeriodChange }: Dat
           <option value="week">This Week</option>
           <option value="month">This Month</option>
           <option value="year">This Year</option>
-          <option value="custom">Custom Date</option>
+          <option value="custom">Go To Day</option>
         </select>
       </div>
 

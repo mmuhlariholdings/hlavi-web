@@ -6,7 +6,7 @@ import { useRepository } from "@/contexts/RepositoryContext";
 import { useInitializeHlavi } from "@/hooks/useInitializeHlavi";
 import { useBranches } from "@/hooks/useBranches";
 import { BranchSelector } from "./BranchSelector";
-import { GitBranch, Loader2, AlertCircle, CheckCircle2, Sparkles } from "lucide-react";
+import { Loader2, Sparkles } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 function useCheckHlavi(owner: string, repo: string, branch?: string) {
@@ -87,7 +87,14 @@ export function RepoSelector() {
     );
   }
 
-  const repositories = data?.repositories || [];
+  const repositories = (data?.repositories || []).sort((a, b) => {
+    // First sort by organization (owner)
+    const ownerCompare = a.owner.login.localeCompare(b.owner.login);
+    if (ownerCompare !== 0) return ownerCompare;
+
+    // Then sort by repository name
+    return a.name.localeCompare(b.name);
+  });
 
   if (repositories.length === 0) {
     return (
@@ -222,24 +229,7 @@ export function RepoSelector() {
       )}
 
       {selectedRepo && hlaviCheck?.hasHlavi && (
-        <>
-          <div className="flex items-start gap-3 p-4 bg-green-50 rounded-lg border border-green-200">
-            <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <GitBranch className="w-4 h-4 text-gray-500" />
-                <h3 className="font-medium">{selectedRepo.full_name}</h3>
-              </div>
-              {selectedRepo.description && (
-                <p className="text-sm text-gray-600 mt-1">
-                  {selectedRepo.description}
-                </p>
-              )}
-            </div>
-          </div>
-
-          <BranchSelector />
-        </>
+        <BranchSelector />
       )}
     </div>
   );

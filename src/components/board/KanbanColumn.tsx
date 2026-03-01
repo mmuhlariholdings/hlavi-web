@@ -16,7 +16,7 @@ export function KanbanColumn({
   onToggleCollapse,
 }: KanbanColumnProps) {
   return (
-    <div className="w-full md:flex-shrink-0 md:w-80">
+    <div className="min-w-full md:min-w-0 md:flex-shrink-0 md:w-80">
       <div className="bg-gray-100 rounded-lg p-4 border border-gray-300">
         <div className="flex items-center justify-between mb-3">
           <h3 className="font-semibold text-lg">{column.name}</h3>

@@ -76,17 +76,17 @@ export function KanbanBoard({ tasks, boardConfig }: KanbanBoardProps) {
     <div className="relative">
       {/* Indicator for more content to the left */}
       {showMoreLeft && (
-        <div className="hidden md:block absolute left-0 top-0 bottom-0 w-1 bg-gray-400/30 z-10 pointer-events-none" />
+        <div className="absolute left-0 top-0 bottom-0 w-1 bg-gray-400/30 z-10 pointer-events-none" />
       )}
 
       {/* Indicator for more content to the right */}
       {showMoreRight && (
-        <div className="hidden md:block absolute right-0 top-0 bottom-0 w-1 bg-gray-400/30 z-10 pointer-events-none" />
+        <div className="absolute right-0 top-0 bottom-0 w-1 bg-gray-400/30 z-10 pointer-events-none" />
       )}
 
       <div
         ref={scrollContainerRef}
-        className="flex flex-col md:flex-row gap-4 md:overflow-x-auto md:pb-4 -mx-4 px-4 md:mx-0 md:px-0"
+        className="flex flex-row gap-4 overflow-x-auto pb-4 -mx-4 px-4 md:mx-0 md:px-0"
       >
         {boardConfig.columns.map((column) => {
           const columnTasks = tasks.filter(

@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useRepository } from "@/contexts/RepositoryContext";
 import { useTasks } from "@/hooks/useTasks";
 import { DateSelector } from "@/components/agenda/DateSelector";
 import { AgendaDateSection } from "@/components/agenda/AgendaDateSection";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { Calendar } from "lucide-react";
-import { format, startOfWeek, endOfWeek, startOfDay, endOfDay, startOfMonth, endOfMonth, startOfYear, endOfYear, parseISO, isWithinInterval, eachDayOfInterval, max, min } from "date-fns";
+import { format, startOfWeek, endOfWeek, startOfDay, endOfDay, startOfMonth, endOfMonth, startOfYear, endOfYear, parseISO, isWithinInterval, eachDayOfInterval, max, min, isSameDay } from "date-fns";
 import Link from "next/link";
 import { BranchInitializer } from "@/components/dashboard/BranchInitializer";
 
@@ -16,6 +16,7 @@ export default function AgendaPage() {
   const { data, isLoading, error } = useTasks(owner || "", repo || "", branch);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [viewPeriod, setViewPeriod] = useState<"day" | "week" | "month" | "year">("day");
+  const dateRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
   // Group tasks by date chronologically (tasks appear on every day they span)
   const tasksByDate = useMemo(() => {
@@ -93,6 +94,24 @@ export default function AgendaPage() {
 
   // Check if there are any tasks for this period
   const hasAnyTasks = tasksByDate.length > 0;
+
+  // Scroll to today's date (or selected date) when data loads
+  useEffect(() => {
+    if (tasksByDate.length === 0) return;
+
+    // Find today's date in the list
+    const today = startOfDay(new Date());
+    const todayKey = format(today, "yyyy-MM-dd");
+
+    // Try to scroll to today, or the first date if today isn't in the list
+    const targetRef = dateRefs.current.get(todayKey) || dateRefs.current.values().next().value;
+
+    if (targetRef) {
+      setTimeout(() => {
+        targetRef.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 100);
+    }
+  }, [tasksByDate]);
 
   if (!owner || !repo) {
     return (
@@ -182,9 +201,27 @@ export default function AgendaPage() {
         </div>
       ) : (
         <div className="relative">
-          {tasksByDate.map(({ date, tasks }) => (
-            <AgendaDateSection key={format(date, "yyyy-MM-dd")} date={date} tasks={tasks} />
-          ))}
+          {tasksByDate.map(({ date, tasks }) => {
+            const dateKey = format(date, "yyyy-MM-dd");
+            const today = startOfDay(new Date());
+            const isToday = isSameDay(date, today);
+
+            return (
+              <AgendaDateSection
+                key={dateKey}
+                ref={(el) => {
+                  if (el) {
+                    dateRefs.current.set(dateKey, el);
+                  } else {
+                    dateRefs.current.delete(dateKey);
+                  }
+                }}
+                date={date}
+                tasks={tasks}
+                isTargetDate={isToday}
+              />
+            );
+          })}
         </div>
       )}
     </div>

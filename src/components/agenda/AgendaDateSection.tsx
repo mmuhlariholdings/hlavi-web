@@ -4,13 +4,16 @@ import { format, isToday, isTomorrow, isYesterday } from "date-fns";
 import { Calendar } from "lucide-react";
 import Link from "next/link";
 import { Task } from "@/lib/types";
+import { forwardRef } from "react";
 
 interface AgendaDateSectionProps {
   date: Date;
   tasks: Task[];
+  isTargetDate?: boolean;
 }
 
-export function AgendaDateSection({ date, tasks }: AgendaDateSectionProps) {
+export const AgendaDateSection = forwardRef<HTMLDivElement, AgendaDateSectionProps>(
+  ({ date, tasks, isTargetDate }, ref) => {
   const getDateLabel = (date: Date) => {
     if (isToday(date)) return "Today";
     if (isTomorrow(date)) return "Tomorrow";
@@ -62,9 +65,9 @@ export function AgendaDateSection({ date, tasks }: AgendaDateSectionProps) {
   };
 
   return (
-    <div className="mb-6">
-      {/* Sticky Date Header */}
-      <div className="sticky top-0 z-20 bg-gradient-to-r from-blue-50 to-blue-100 border-b-2 border-blue-200 py-4 px-6 mb-6 shadow-md">
+    <div ref={ref} className="mb-8 scroll-mt-6">
+      {/* Date Header */}
+      <div className={`bg-gradient-to-r from-blue-50 to-blue-100 border-b-2 border-blue-200 py-4 px-6 mb-4 rounded-t-lg ${isTargetDate ? 'ring-2 ring-blue-400' : ''}`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="bg-blue-600 rounded-lg p-2.5">
@@ -84,7 +87,7 @@ export function AgendaDateSection({ date, tasks }: AgendaDateSectionProps) {
       </div>
 
       {/* Tasks for this date */}
-      <div className="space-y-2">
+      <div className="space-y-3">
         {tasks.map((task) => {
           const completedCriteria = task.acceptance_criteria.filter((ac) => ac.completed).length;
           const totalCriteria = task.acceptance_criteria.length;
@@ -159,4 +162,6 @@ export function AgendaDateSection({ date, tasks }: AgendaDateSectionProps) {
       </div>
     </div>
   );
-}
+});
+
+AgendaDateSection.displayName = "AgendaDateSection";

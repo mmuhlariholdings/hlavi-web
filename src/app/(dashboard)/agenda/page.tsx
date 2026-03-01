@@ -18,6 +18,8 @@ export default function AgendaPage() {
   const [viewPeriod, setViewPeriod] = useState<"day" | "week" | "month" | "year">("day");
   const dateRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [showMoreBelow, setShowMoreBelow] = useState(false);
+  const [showMoreAbove, setShowMoreAbove] = useState(false);
 
   // Group tasks by date chronologically (tasks appear on every day they span)
   const tasksByDate = useMemo(() => {
@@ -113,16 +115,62 @@ export default function AgendaPage() {
         const element = targetRef;
 
         if (container && element) {
-          // Calculate position to place element near top with some padding
+          // Calculate position to place element near top with padding to show peek of previous item
           const containerTop = container.getBoundingClientRect().top;
           const elementTop = element.getBoundingClientRect().top;
-          const offset = elementTop - containerTop + container.scrollTop - 20; // 20px padding from top
+          const offset = elementTop - containerTop + container.scrollTop - 60; // 60px padding to show previous item peek
 
-          container.scrollTo({ top: offset, behavior: "smooth" });
+          container.scrollTo({ top: Math.max(0, offset), behavior: "smooth" });
         }
       }, 100);
     }
   }, [tasksByDate]);
+
+  // Track scroll position to show indicators for more content
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+
+      // Show indicator if there's more content above (scrolled down at least 50px)
+      setShowMoreAbove(scrollTop > 50);
+
+      // Show indicator if there's more content below (not at bottom)
+      setShowMoreBelow(scrollTop + clientHeight < scrollHeight - 50);
+    };
+
+    container.addEventListener('scroll', handleScroll);
+    // Initial check
+    handleScroll();
+
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, [tasksByDate]);
+
+  const scrollToTop = useCallback(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, []);
+
+  const scrollToToday = useCallback(() => {
+    const today = startOfDay(new Date());
+    const todayKey = format(today, "yyyy-MM-dd");
+    const todayRef = dateRefs.current.get(todayKey);
+
+    if (todayRef && scrollContainerRef.current) {
+      const container = scrollContainerRef.current;
+      const element = todayRef;
+
+      // Calculate position to place element near top with padding to show peek of previous item
+      const containerTop = container.getBoundingClientRect().top;
+      const elementTop = element.getBoundingClientRect().top;
+      const offset = elementTop - containerTop + container.scrollTop - 60; // 60px padding to show previous item peek
+
+      container.scrollTo({ top: Math.max(0, offset), behavior: "smooth" });
+    }
+  }, []);
 
   if (!owner || !repo) {
     return (
@@ -173,30 +221,6 @@ export default function AgendaPage() {
     );
   }
 
-  const scrollToTop = useCallback(() => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  }, []);
-
-  const scrollToToday = useCallback(() => {
-    const today = startOfDay(new Date());
-    const todayKey = format(today, "yyyy-MM-dd");
-    const todayRef = dateRefs.current.get(todayKey);
-
-    if (todayRef && scrollContainerRef.current) {
-      const container = scrollContainerRef.current;
-      const element = todayRef;
-
-      // Calculate position to place element near top with some padding
-      const containerTop = container.getBoundingClientRect().top;
-      const elementTop = element.getBoundingClientRect().top;
-      const offset = elementTop - containerTop + container.scrollTop - 20; // 20px padding from top
-
-      container.scrollTo({ top: offset, behavior: "smooth" });
-    }
-  }, []);
-
   return (
     <div className="space-y-6">
       <BranchInitializer />
@@ -219,13 +243,20 @@ export default function AgendaPage() {
         onPeriodChange={setViewPeriod}
       />
 
-      <div className="relative">
-        {/* Shadow overlay at top to indicate scrolling */}
-        <div className="absolute top-0 left-0 right-0 h-4 bg-gradient-to-b from-gray-900/10 to-transparent pointer-events-none z-10" />
+      <div className="relative border-t border-gray-200 rounded-t-lg">
+        {/* Indicator for more content above */}
+        {showMoreAbove && (
+          <div className="absolute top-0 left-0 right-0 h-1 bg-blue-500/30 z-10 pointer-events-none" />
+        )}
+
+        {/* Indicator for more content below */}
+        {showMoreBelow && (
+          <div className="absolute bottom-0 left-0 right-0 h-1 bg-blue-500/30 z-10 pointer-events-none" />
+        )}
 
         <div
           ref={scrollContainerRef}
-          className="overflow-y-auto px-1"
+          className="overflow-y-auto px-1 py-4"
           style={{ height: 'calc(100vh - 280px)' }}
         >
           {!hasAnyTasks ? (

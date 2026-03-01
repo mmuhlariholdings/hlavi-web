@@ -65,9 +65,9 @@ export const AgendaDateSection = forwardRef<HTMLDivElement, AgendaDateSectionPro
   };
 
   return (
-    <div ref={ref} className="mb-8 scroll-mt-6">
+    <div ref={ref} className="mb-8 scroll-mt-16">
       {/* Date Header */}
-      <div className={`bg-gradient-to-r from-blue-50 to-blue-100 border-b-2 border-blue-200 py-4 px-6 mb-4 rounded-t-lg ${isTargetDate ? 'ring-2 ring-blue-400' : ''}`}>
+      <div className={`bg-gradient-to-r from-blue-50 to-blue-100 border-b-2 border-blue-200 py-4 px-6 mb-4 rounded-lg ${isTargetDate ? 'ring-2 ring-blue-400' : ''}`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="bg-blue-600 rounded-lg p-2.5">

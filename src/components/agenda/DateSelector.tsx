@@ -2,51 +2,45 @@
 
 import { useState } from "react";
 import { Calendar as CalendarIcon, CalendarDays } from "lucide-react";
-import { format, startOfWeek, startOfMonth, startOfYear } from "date-fns";
+import { format, addDays, addWeeks, addMonths, addYears, startOfDay } from "date-fns";
 
 interface DateSelectorProps {
-  selectedDate: Date;
-  onDateChange: (date: Date) => void;
-  onPeriodChange?: (period: "day" | "week" | "month" | "year") => void;
+  onDateJump: (date: Date) => void;
 }
 
-type QuickSelectOption = "today" | "tomorrow" | "week" | "month" | "year" | "custom";
+type QuickSelectOption = "today" | "tomorrow" | "nextWeek" | "nextMonth" | "nextYear" | "custom";
 
-export function DateSelector({ selectedDate, onDateChange, onPeriodChange }: DateSelectorProps) {
-  const [selectedOption, setSelectedOption] = useState<QuickSelectOption>("year");
+export function DateSelector({ onDateJump }: DateSelectorProps) {
+  const [selectedOption, setSelectedOption] = useState<QuickSelectOption | "">("");
+  const [customDate, setCustomDate] = useState<Date>(new Date());
 
   const handleQuickSelect = (option: QuickSelectOption) => {
-    setSelectedOption(option);
-    const now = new Date();
+    const now = startOfDay(new Date());
 
     switch (option) {
       case "today":
-        onDateChange(now);
-        onPeriodChange?.("day");
+        onDateJump(now);
         break;
       case "tomorrow":
-        const tomorrow = new Date(now);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        onDateChange(tomorrow);
-        onPeriodChange?.("day");
+        onDateJump(addDays(now, 1));
         break;
-      case "week":
-        onDateChange(startOfWeek(now));
-        onPeriodChange?.("week");
+      case "nextWeek":
+        onDateJump(addWeeks(now, 1));
         break;
-      case "month":
-        onDateChange(startOfMonth(now));
-        onPeriodChange?.("month");
+      case "nextMonth":
+        onDateJump(addMonths(now, 1));
         break;
-      case "year":
-        onDateChange(startOfYear(now));
-        onPeriodChange?.("year");
+      case "nextYear":
+        onDateJump(addYears(now, 1));
         break;
       case "custom":
-        onPeriodChange?.("day");
         // User will use date picker
-        break;
+        setSelectedOption(option);
+        return;
     }
+
+    // Reset to empty after jumping (except custom)
+    setSelectedOption("");
   };
 
   return (
@@ -56,14 +50,18 @@ export function DateSelector({ selectedDate, onDateChange, onPeriodChange }: Dat
         <CalendarDays className="w-4 h-4 text-gray-500 hidden sm:block" />
         <select
           value={selectedOption}
-          onChange={(e) => handleQuickSelect(e.target.value as QuickSelectOption)}
+          onChange={(e) => {
+            const value = e.target.value as QuickSelectOption;
+            handleQuickSelect(value);
+          }}
           className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-sm font-medium text-gray-700"
         >
+          <option value="">Jump to...</option>
           <option value="today">Today</option>
           <option value="tomorrow">Tomorrow</option>
-          <option value="week">This Week</option>
-          <option value="month">This Month</option>
-          <option value="year">This Year</option>
+          <option value="nextWeek">Next Week</option>
+          <option value="nextMonth">Next Month</option>
+          <option value="nextYear">Next Year</option>
           <option value="custom">Go To Day</option>
         </select>
       </div>
@@ -74,8 +72,12 @@ export function DateSelector({ selectedDate, onDateChange, onPeriodChange }: Dat
           <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
           <input
             type="date"
-            value={format(selectedDate, "yyyy-MM-dd")}
-            onChange={(e) => onDateChange(new Date(e.target.value))}
+            value={format(customDate, "yyyy-MM-dd")}
+            onChange={(e) => {
+              const newDate = new Date(e.target.value);
+              setCustomDate(newDate);
+              onDateJump(newDate);
+            }}
             className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-sm"
           />
         </div>

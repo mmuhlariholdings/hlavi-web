@@ -6,58 +6,44 @@ import { useTasks } from "@/hooks/useTasks";
 import { DateSelector } from "@/components/agenda/DateSelector";
 import { AgendaDateSection } from "@/components/agenda/AgendaDateSection";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { Calendar, CalendarCheck } from "lucide-react";
-import { format, startOfWeek, endOfWeek, startOfDay, endOfDay, startOfMonth, endOfMonth, startOfYear, endOfYear, parseISO, isWithinInterval, eachDayOfInterval, max, min, isSameDay } from "date-fns";
+import { Calendar } from "lucide-react";
+import { format, startOfDay, parseISO, eachDayOfInterval, isSameDay } from "date-fns";
 import Link from "next/link";
 import { BranchInitializer } from "@/components/dashboard/BranchInitializer";
 
 export default function AgendaPage() {
   const { owner, repo, branch } = useRepository();
   const { data, isLoading, error } = useTasks(owner || "", repo || "", branch);
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [viewPeriod, setViewPeriod] = useState<"day" | "week" | "month" | "year">("year");
   const dateRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [showMoreBelow, setShowMoreBelow] = useState(false);
   const [showMoreAbove, setShowMoreAbove] = useState(false);
 
+  // Scroll to a specific date
+  const scrollToDate = useCallback((targetDate: Date) => {
+    const dateKey = format(startOfDay(targetDate), "yyyy-MM-dd");
+    const targetRef = dateRefs.current.get(dateKey);
+
+    if (targetRef && scrollContainerRef.current) {
+      const container = scrollContainerRef.current;
+      const element = targetRef;
+
+      // Calculate position to place element near top with padding to show peek of previous item
+      const containerTop = container.getBoundingClientRect().top;
+      const elementTop = element.getBoundingClientRect().top;
+      const offset = elementTop - containerTop + container.scrollTop - 60;
+
+      container.scrollTo({ top: Math.max(0, offset), behavior: "smooth" });
+    }
+  }, []);
+
   // Group tasks by date chronologically (tasks appear on every day they span)
   const tasksByDate = useMemo(() => {
     const tasks = data?.tasks || [];
 
-    // Determine the viewing period based on viewPeriod state
-    let periodStart: Date;
-    let periodEnd: Date;
-
-    switch (viewPeriod) {
-      case "week":
-        periodStart = startOfWeek(selectedDate);
-        periodEnd = endOfWeek(selectedDate);
-        break;
-      case "month":
-        periodStart = startOfMonth(selectedDate);
-        periodEnd = endOfMonth(selectedDate);
-        break;
-      case "year":
-        periodStart = startOfYear(selectedDate);
-        periodEnd = endOfYear(selectedDate);
-        break;
-      case "day":
-      default:
-        periodStart = startOfDay(selectedDate);
-        periodEnd = endOfDay(selectedDate);
-        break;
-    }
-
-    // Filter tasks that fall within the viewing period and have dates
+    // Show all tasks with dates (no period filtering)
     const relevantTasks = tasks.filter((task) => {
-      if (!task.start_date) return false; // Only show tasks with start dates
-
-      const taskStart = new Date(task.start_date);
-      const taskEnd = task.end_date ? new Date(task.end_date) : taskStart;
-
-      // Check if task overlaps with viewing period
-      return taskStart <= periodEnd && taskEnd >= periodStart;
+      return task.start_date !== undefined && task.start_date !== null;
     });
 
     // Group tasks by date - each task appears on every day it spans
@@ -67,12 +53,8 @@ export default function AgendaPage() {
       const taskStart = new Date(task.start_date!);
       const taskEnd = task.end_date ? new Date(task.end_date) : taskStart;
 
-      // Calculate the intersection of task range and viewing period
-      const rangeStart = max([taskStart, periodStart]);
-      const rangeEnd = min([taskEnd, periodEnd]);
-
-      // Generate all dates this task spans within the viewing period
-      const datesSpanned = eachDayOfInterval({ start: rangeStart, end: rangeEnd });
+      // Generate all dates this task spans
+      const datesSpanned = eachDayOfInterval({ start: taskStart, end: taskEnd });
 
       datesSpanned.forEach((date) => {
         const dateKey = format(date, "yyyy-MM-dd");
@@ -93,7 +75,7 @@ export default function AgendaPage() {
       }));
 
     return sortedEntries;
-  }, [data, selectedDate, viewPeriod]);
+  }, [data]);
 
   // Check if there are any tasks for this period
   const hasAnyTasks = tasksByDate.length > 0;
@@ -120,7 +102,7 @@ export default function AgendaPage() {
           const elementTop = element.getBoundingClientRect().top;
           const offset = elementTop - containerTop + container.scrollTop - 60; // 60px padding to show previous item peek
 
-          container.scrollTo({ top: Math.max(0, offset), behavior: "smooth" });
+          container.scrollTo({ top: Math.max(0, offset), behavior: "auto" });
         }
       }, 100);
     }
@@ -148,24 +130,6 @@ export default function AgendaPage() {
     return () => container.removeEventListener('scroll', handleScroll);
   }, [tasksByDate]);
 
-  const scrollToToday = useCallback(() => {
-    const today = startOfDay(new Date());
-    const todayKey = format(today, "yyyy-MM-dd");
-    const todayRef = dateRefs.current.get(todayKey);
-
-    if (todayRef && scrollContainerRef.current) {
-      const container = scrollContainerRef.current;
-      const element = todayRef;
-
-      // Calculate position to place element near top with padding to show peek of previous item
-      const containerTop = container.getBoundingClientRect().top;
-      const elementTop = element.getBoundingClientRect().top;
-      const offset = elementTop - containerTop + container.scrollTop - 60; // 60px padding to show previous item peek
-
-      container.scrollTo({ top: Math.max(0, offset), behavior: "smooth" });
-    }
-  }, []);
-
   if (!owner || !repo) {
     return (
       <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
@@ -189,15 +153,11 @@ export default function AgendaPage() {
           <div>
             <h1 className="text-2xl md:text-3xl font-bold mb-2">Agenda</h1>
             <p className="text-sm md:text-base text-gray-600">
-              View tasks scheduled for {format(selectedDate, "MMMM d, yyyy")}
+              All scheduled tasks
             </p>
           </div>
         </div>
-        <DateSelector
-        selectedDate={selectedDate}
-        onDateChange={setSelectedDate}
-        onPeriodChange={setViewPeriod}
-      />
+        <DateSelector onDateJump={() => {}} />
         <div className="space-y-4">
           <Skeleton className="h-48 w-full rounded-lg" />
           <Skeleton className="h-48 w-full rounded-lg" />
@@ -223,19 +183,12 @@ export default function AgendaPage() {
         <div>
           <h1 className="text-2xl md:text-3xl font-bold mb-2">Agenda</h1>
           <p className="text-sm md:text-base text-gray-600">
-            {viewPeriod === "day" && `View tasks scheduled for ${format(selectedDate, "MMMM d, yyyy")}`}
-            {viewPeriod === "week" && `View tasks scheduled for the week of ${format(selectedDate, "MMMM d, yyyy")}`}
-            {viewPeriod === "month" && `View tasks scheduled for ${format(selectedDate, "MMMM yyyy")}`}
-            {viewPeriod === "year" && `View tasks scheduled for ${format(selectedDate, "yyyy")}`}
+            All scheduled tasks
           </p>
         </div>
       </div>
 
-      <DateSelector
-        selectedDate={selectedDate}
-        onDateChange={setSelectedDate}
-        onPeriodChange={setViewPeriod}
-      />
+      <DateSelector onDateJump={scrollToDate} />
 
       <div className="relative border-t border-gray-200 rounded-t-lg">
         {/* Indicator for more content above */}
@@ -257,15 +210,10 @@ export default function AgendaPage() {
             <div className="text-center py-16 bg-gray-50 rounded-lg border border-gray-200">
               <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                No tasks for{" "}
-                {viewPeriod === "day" && format(selectedDate, "MMMM d, yyyy")}
-                {viewPeriod === "week" && `the week of ${format(selectedDate, "MMMM d, yyyy")}`}
-                {viewPeriod === "month" && format(selectedDate, "MMMM yyyy")}
-                {viewPeriod === "year" && format(selectedDate, "yyyy")}
+                No scheduled tasks
               </h3>
               <p className="text-sm text-gray-600 max-w-md mx-auto">
-                There are no tasks scheduled for this period. Try selecting a different
-                date or create new tasks in your repository.
+                There are no tasks with dates in your repository. Create new tasks with start dates to see them here.
               </p>
             </div>
           ) : (
@@ -295,18 +243,6 @@ export default function AgendaPage() {
           )}
         </div>
       </div>
-
-      {/* Floating Action Button */}
-      {hasAnyTasks && (
-        <button
-          onClick={scrollToToday}
-          className="fixed bottom-6 right-6 bg-green-600 hover:bg-green-700 text-white rounded-lg p-4 shadow-lg transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 z-50"
-          aria-label="Jump to today"
-          title="Jump to today"
-        >
-          <CalendarCheck className="w-6 h-6" />
-        </button>
-      )}
     </div>
   );
 }

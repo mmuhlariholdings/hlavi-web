@@ -17,6 +17,7 @@ export default function AgendaPage() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [viewPeriod, setViewPeriod] = useState<"day" | "week" | "month" | "year">("day");
   const dateRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Group tasks by date chronologically (tasks appear on every day they span)
   const tasksByDate = useMemo(() => {
@@ -97,7 +98,7 @@ export default function AgendaPage() {
 
   // Scroll to today's date (or selected date) when data loads
   useEffect(() => {
-    if (tasksByDate.length === 0) return;
+    if (tasksByDate.length === 0 || !scrollContainerRef.current) return;
 
     // Find today's date in the list
     const today = startOfDay(new Date());
@@ -108,7 +109,17 @@ export default function AgendaPage() {
 
     if (targetRef) {
       setTimeout(() => {
-        targetRef.scrollIntoView({ behavior: "smooth", block: "center" });
+        const container = scrollContainerRef.current;
+        const element = targetRef;
+
+        if (container && element) {
+          // Calculate position to place element near top with some padding
+          const containerTop = container.getBoundingClientRect().top;
+          const elementTop = element.getBoundingClientRect().top;
+          const offset = elementTop - containerTop + container.scrollTop - 20; // 20px padding from top
+
+          container.scrollTo({ top: offset, behavior: "smooth" });
+        }
       }, 100);
     }
   }, [tasksByDate]);
@@ -163,7 +174,9 @@ export default function AgendaPage() {
   }
 
   const scrollToTop = useCallback(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({ top: 0, behavior: "smooth" });
+    }
   }, []);
 
   const scrollToToday = useCallback(() => {
@@ -171,8 +184,16 @@ export default function AgendaPage() {
     const todayKey = format(today, "yyyy-MM-dd");
     const todayRef = dateRefs.current.get(todayKey);
 
-    if (todayRef) {
-      todayRef.scrollIntoView({ behavior: "smooth", block: "center" });
+    if (todayRef && scrollContainerRef.current) {
+      const container = scrollContainerRef.current;
+      const element = todayRef;
+
+      // Calculate position to place element near top with some padding
+      const containerTop = container.getBoundingClientRect().top;
+      const elementTop = element.getBoundingClientRect().top;
+      const offset = elementTop - containerTop + container.scrollTop - 20; // 20px padding from top
+
+      container.scrollTo({ top: offset, behavior: "smooth" });
     }
   }, []);
 
@@ -198,46 +219,57 @@ export default function AgendaPage() {
         onPeriodChange={setViewPeriod}
       />
 
-      {!hasAnyTasks ? (
-        <div className="text-center py-16 bg-gray-50 rounded-lg border border-gray-200">
-          <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            No tasks for{" "}
-            {viewPeriod === "day" && format(selectedDate, "MMMM d, yyyy")}
-            {viewPeriod === "week" && `the week of ${format(selectedDate, "MMMM d, yyyy")}`}
-            {viewPeriod === "month" && format(selectedDate, "MMMM yyyy")}
-            {viewPeriod === "year" && format(selectedDate, "yyyy")}
-          </h3>
-          <p className="text-sm text-gray-600 max-w-md mx-auto">
-            There are no tasks scheduled for this period. Try selecting a different
-            date or create new tasks in your repository.
-          </p>
-        </div>
-      ) : (
-        <div className="relative">
-          {tasksByDate.map(({ date, tasks }) => {
-            const dateKey = format(date, "yyyy-MM-dd");
-            const today = startOfDay(new Date());
-            const isToday = isSameDay(date, today);
+      <div className="relative">
+        {/* Shadow overlay at top to indicate scrolling */}
+        <div className="absolute top-0 left-0 right-0 h-4 bg-gradient-to-b from-gray-900/10 to-transparent pointer-events-none z-10" />
 
-            return (
-              <AgendaDateSection
-                key={dateKey}
-                ref={(el) => {
-                  if (el) {
-                    dateRefs.current.set(dateKey, el);
-                  } else {
-                    dateRefs.current.delete(dateKey);
-                  }
-                }}
-                date={date}
-                tasks={tasks}
-                isTargetDate={isToday}
-              />
-            );
-          })}
+        <div
+          ref={scrollContainerRef}
+          className="overflow-y-auto px-1"
+          style={{ height: 'calc(100vh - 280px)' }}
+        >
+          {!hasAnyTasks ? (
+            <div className="text-center py-16 bg-gray-50 rounded-lg border border-gray-200">
+              <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                No tasks for{" "}
+                {viewPeriod === "day" && format(selectedDate, "MMMM d, yyyy")}
+                {viewPeriod === "week" && `the week of ${format(selectedDate, "MMMM d, yyyy")}`}
+                {viewPeriod === "month" && format(selectedDate, "MMMM yyyy")}
+                {viewPeriod === "year" && format(selectedDate, "yyyy")}
+              </h3>
+              <p className="text-sm text-gray-600 max-w-md mx-auto">
+                There are no tasks scheduled for this period. Try selecting a different
+                date or create new tasks in your repository.
+              </p>
+            </div>
+          ) : (
+            <div className="relative">
+              {tasksByDate.map(({ date, tasks }) => {
+                const dateKey = format(date, "yyyy-MM-dd");
+                const today = startOfDay(new Date());
+                const isToday = isSameDay(date, today);
+
+                return (
+                  <AgendaDateSection
+                    key={dateKey}
+                    ref={(el) => {
+                      if (el) {
+                        dateRefs.current.set(dateKey, el);
+                      } else {
+                        dateRefs.current.delete(dateKey);
+                      }
+                    }}
+                    date={date}
+                    tasks={tasks}
+                    isTargetDate={isToday}
+                  />
+                );
+              })}
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
       {/* Floating Action Buttons */}
       {hasAnyTasks && (

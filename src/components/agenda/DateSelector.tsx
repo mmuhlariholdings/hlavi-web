@@ -11,10 +11,11 @@ interface DateSelectorProps {
 type QuickSelectOption = "today" | "tomorrow" | "nextWeek" | "nextMonth" | "nextYear" | "custom";
 
 export function DateSelector({ onDateJump }: DateSelectorProps) {
-  const [selectedOption, setSelectedOption] = useState<QuickSelectOption | "">("");
+  const [selectedOption, setSelectedOption] = useState<QuickSelectOption>("today");
   const [customDate, setCustomDate] = useState<Date>(new Date());
 
   const handleQuickSelect = (option: QuickSelectOption) => {
+    setSelectedOption(option);
     const now = startOfDay(new Date());
 
     switch (option) {
@@ -35,12 +36,8 @@ export function DateSelector({ onDateJump }: DateSelectorProps) {
         break;
       case "custom":
         // User will use date picker
-        setSelectedOption(option);
         return;
     }
-
-    // Reset to empty after jumping (except custom)
-    setSelectedOption("");
   };
 
   return (
@@ -56,7 +53,6 @@ export function DateSelector({ onDateJump }: DateSelectorProps) {
           }}
           className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-sm font-medium text-gray-700"
         >
-          <option value="">Jump to...</option>
           <option value="today">Today</option>
           <option value="tomorrow">Tomorrow</option>
           <option value="nextWeek">Next Week</option>

@@ -32,14 +32,22 @@ export default function AgendaPage() {
       return isSameDay(new Date(task.end_date), selectedDate);
     });
 
-    const tasksInProgress = tasks.filter((task) => {
+    // Tasks that are active/running during the selected date
+    // This includes tasks where the selected date falls within their date range
+    // but they don't start or end on this specific day
+    const tasksActive = tasks.filter((task) => {
       if (!task.start_date || !task.end_date) return false;
       const start = new Date(task.start_date);
       const end = new Date(task.end_date);
-      return (
-        isWithinInterval(selectedDate, { start, end }) &&
-        task.status === "inprogress"
-      );
+
+      // Check if selected date is within the task's date range
+      const isWithinRange = isWithinInterval(selectedDate, { start, end });
+
+      // Exclude tasks that start or end today (they'll be in their own sections)
+      const startsToday = isSameDay(start, selectedDate);
+      const endsToday = isSameDay(end, selectedDate);
+
+      return isWithinRange && !startsToday && !endsToday;
     });
 
     const overdueTasks = tasks.filter((task) => {
@@ -59,7 +67,7 @@ export default function AgendaPage() {
     return {
       starting: tasksStartingToday,
       due: tasksDueToday,
-      inProgress: tasksInProgress,
+      active: tasksActive,
       overdue: overdueTasks,
       noDates: tasksWithoutDates,
     };
@@ -69,7 +77,7 @@ export default function AgendaPage() {
   const hasAnyTasks =
     filteredTasks.starting.length > 0 ||
     filteredTasks.due.length > 0 ||
-    filteredTasks.inProgress.length > 0 ||
+    filteredTasks.active.length > 0 ||
     filteredTasks.overdue.length > 0 ||
     filteredTasks.noDates.length > 0;
 
@@ -175,12 +183,12 @@ export default function AgendaPage() {
             />
           )}
 
-          {/* In Progress */}
-          {filteredTasks.inProgress.length > 0 && (
+          {/* Active/Running Tasks */}
+          {filteredTasks.active.length > 0 && (
             <AgendaSection
-              title="In Progress"
-              tasks={filteredTasks.inProgress}
-              icon={<Clock className="w-5 h-5 text-yellow-600" />}
+              title="Active Tasks"
+              tasks={filteredTasks.active}
+              icon={<Clock className="w-5 h-5 text-blue-600" />}
             />
           )}
 

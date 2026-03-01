@@ -14,9 +14,9 @@
     {
       "id": 2,
       "description": "Attach 4-5 screenshots to relevant tweets",
-      "completed": false,
+      "completed": true,
       "created_at": "2026-02-27T21:00:00.000Z",
-      "completed_at": null
+      "completed_at": "2026-03-01T17:10:15.836Z"
     },
     {
       "id": 3,
@@ -34,7 +34,7 @@
     }
   ],
   "created_at": "2026-02-27T21:00:00.000Z",
-  "updated_at": "2026-03-01T17:10:12.959Z",
+  "updated_at": "2026-03-01T17:10:16.008Z",
   "agent_assigned": false,
   "rejection_reason": null,
   "start_date": "2026-03-05T00:00:00.000Z",

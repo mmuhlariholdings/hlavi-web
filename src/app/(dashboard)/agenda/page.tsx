@@ -181,7 +181,7 @@ export default function AgendaPage() {
           </p>
         </div>
       ) : (
-        <div className="space-y-0">
+        <div className="relative">
           {tasksByDate.map(({ date, tasks }) => (
             <AgendaDateSection key={format(date, "yyyy-MM-dd")} date={date} tasks={tasks} />
           ))}

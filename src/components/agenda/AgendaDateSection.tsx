@@ -3,20 +3,7 @@
 import { format, isToday, isTomorrow, isYesterday } from "date-fns";
 import { Calendar } from "lucide-react";
 import Link from "next/link";
-
-interface Task {
-  id: string;
-  title: string;
-  description?: string;
-  status: string;
-  start_date?: string;
-  end_date?: string;
-  acceptance_criteria: Array<{
-    id: number;
-    description: string;
-    completed: boolean;
-  }>;
-}
+import { Task } from "@/lib/types";
 
 interface AgendaDateSectionProps {
   date: Date;
@@ -28,7 +15,11 @@ export function AgendaDateSection({ date, tasks }: AgendaDateSectionProps) {
     if (isToday(date)) return "Today";
     if (isTomorrow(date)) return "Tomorrow";
     if (isYesterday(date)) return "Yesterday";
-    return format(date, "EEEE, MMMM d, yyyy");
+    return format(date, "MMMM d, yyyy");
+  };
+
+  const getDayOfWeek = (date: Date) => {
+    return format(date, "EEEE");
   };
 
   const getStatusColor = (status: string) => {
@@ -71,20 +62,29 @@ export function AgendaDateSection({ date, tasks }: AgendaDateSectionProps) {
   };
 
   return (
-    <div className="mb-8">
+    <div className="mb-6">
       {/* Sticky Date Header */}
-      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 py-4 mb-4 shadow-sm">
-        <div className="flex items-center gap-3">
-          <Calendar className="w-5 h-5 text-blue-600" />
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900">{getDateLabel(date)}</h2>
-            <p className="text-sm text-gray-500">{tasks.length} task{tasks.length !== 1 ? "s" : ""}</p>
+      <div className="sticky top-0 z-20 bg-gradient-to-r from-blue-50 to-blue-100 border-b-2 border-blue-200 py-4 px-6 mb-6 shadow-md">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="bg-blue-600 rounded-lg p-2.5">
+              <Calendar className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-gray-900">{getDateLabel(date)}</h2>
+              <p className="text-sm text-blue-700 font-medium">
+                {getDayOfWeek(date)}
+              </p>
+            </div>
+          </div>
+          <div className="bg-blue-600 text-white px-5 py-2 rounded-full font-bold text-sm shadow-sm">
+            {tasks.length}
           </div>
         </div>
       </div>
 
       {/* Tasks for this date */}
-      <div className="space-y-3 px-1">
+      <div className="space-y-2">
         {tasks.map((task) => {
           const completedCriteria = task.acceptance_criteria.filter((ac) => ac.completed).length;
           const totalCriteria = task.acceptance_criteria.length;
@@ -93,11 +93,31 @@ export function AgendaDateSection({ date, tasks }: AgendaDateSectionProps) {
             <Link
               key={task.id}
               href={`/tasks/${task.id}`}
-              className="block bg-white border border-gray-200 rounded-lg p-4 hover:border-blue-300 hover:shadow-sm transition-all"
+              className="flex gap-4 bg-white border border-gray-200 rounded-lg p-4 hover:border-blue-400 hover:shadow-md transition-all group"
             >
-              {/* Task Header */}
-              <div className="flex items-start justify-between gap-3 mb-2">
-                <div className="flex items-center gap-2">
+              {/* Left: Time Column */}
+              <div className="flex-shrink-0 w-20 text-center border-r border-gray-200 pr-4">
+                {task.start_date && (
+                  <>
+                    <div className="text-2xl font-bold text-gray-900">
+                      {format(new Date(task.start_date), "d")}
+                    </div>
+                    <div className="text-xs font-medium text-gray-500 uppercase">
+                      {format(new Date(task.start_date), "MMM")}
+                    </div>
+                    {task.end_date && (
+                      <div className="mt-2 text-xs text-gray-400">
+                        → {format(new Date(task.end_date), "MMM d")}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+
+              {/* Right: Task Content */}
+              <div className="flex-1 min-w-0">
+                {/* Task Header */}
+                <div className="flex items-center gap-2 mb-2">
                   <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded">
                     {task.id}
                   </span>
@@ -109,34 +129,27 @@ export function AgendaDateSection({ date, tasks }: AgendaDateSectionProps) {
                     {getStatusLabel(task.status)}
                   </span>
                 </div>
-              </div>
 
-              {/* Task Title */}
-              <h3 className="text-base font-medium text-gray-900 mb-1 line-clamp-2">
-                {task.title}
-              </h3>
+                {/* Task Title */}
+                <h3 className="text-base font-semibold text-gray-900 mb-1 line-clamp-2 group-hover:text-blue-600 transition-colors">
+                  {task.title}
+                </h3>
 
-              {/* Task Description */}
-              {task.description && (
-                <p className="text-sm text-gray-600 mb-3 line-clamp-2">{task.description}</p>
-              )}
+                {/* Task Description */}
+                {task.description && (
+                  <p className="text-sm text-gray-600 mb-2 line-clamp-1">{task.description}</p>
+                )}
 
-              {/* Task Footer */}
-              <div className="flex items-center justify-between text-sm text-gray-500">
-                <div className="flex items-center gap-4">
+                {/* Task Footer */}
+                <div className="flex items-center gap-3 text-xs text-gray-500">
                   {/* Acceptance Criteria Progress */}
                   {totalCriteria > 0 && (
-                    <span>
-                      ✓ {completedCriteria}/{totalCriteria}
-                    </span>
-                  )}
-
-                  {/* Date Range */}
-                  {task.start_date && task.end_date && (
-                    <span className="text-xs">
-                      {format(new Date(task.start_date), "MMM d")} -{" "}
-                      {format(new Date(task.end_date), "MMM d")}
-                    </span>
+                    <div className="flex items-center gap-1">
+                      <span className="font-medium">✓</span>
+                      <span>
+                        {completedCriteria}/{totalCriteria}
+                      </span>
+                    </div>
                   )}
                 </div>
               </div>

@@ -5,7 +5,7 @@ import { Timeline } from "vis-timeline/standalone";
 import "vis-timeline/styles/vis-timeline-graph2d.css";
 import { Task } from "@/lib/types";
 import { useRouter } from "next/navigation";
-import { Calendar, CalendarDays, CalendarRange, Maximize2 } from "lucide-react";
+import { Calendar, CalendarRange } from "lucide-react";
 import { format } from "date-fns";
 
 interface TimelineViewProps {
@@ -26,7 +26,7 @@ export function TimelineView({ tasks }: TimelineViewProps) {
   const timelineRef = useRef<HTMLDivElement>(null);
   const timelineInstance = useRef<Timeline | null>(null);
   const router = useRouter();
-  const [activeZoom, setActiveZoom] = useState<string>("all");
+  const [activeZoom, setActiveZoom] = useState<string>("overall");
 
   useEffect(() => {
     if (!timelineRef.current) return;
@@ -170,7 +170,7 @@ export function TimelineView({ tasks }: TimelineViewProps) {
     let end: Date;
 
     switch (type) {
-      case "today":
+      case "day":
         start = new Date(now.setHours(0, 0, 0, 0));
         end = new Date(now.setHours(23, 59, 59, 999));
         break;
@@ -182,7 +182,11 @@ export function TimelineView({ tasks }: TimelineViewProps) {
         start = new Date(now.getFullYear(), now.getMonth(), 1);
         end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
         break;
-      case "all":
+      case "year":
+        start = new Date(now.getFullYear(), 0, 1);
+        end = new Date(now.getFullYear(), 11, 31);
+        break;
+      case "overall":
         timelineInstance.current.fit();
         return;
       default:
@@ -215,52 +219,22 @@ export function TimelineView({ tasks }: TimelineViewProps) {
           <span className="font-medium">{tasksWithDates.length} tasks on timeline</span>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs text-gray-500 hidden sm:inline">Zoom:</span>
-          <button
-            onClick={() => handleZoom("today")}
-            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-              activeZoom === "today"
-                ? "bg-blue-100 text-blue-700 border border-blue-300"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300"
-            }`}
+        <div className="flex items-center gap-2">
+          <label htmlFor="timeline-zoom" className="text-xs text-gray-500">
+            Zoom:
+          </label>
+          <select
+            id="timeline-zoom"
+            value={activeZoom}
+            onChange={(e) => handleZoom(e.target.value)}
+            className="px-3 py-1.5 text-xs font-medium border border-gray-300 rounded-md bg-white text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
-            <Calendar className="w-3 h-3 inline mr-1" />
-            Today
-          </button>
-          <button
-            onClick={() => handleZoom("week")}
-            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-              activeZoom === "week"
-                ? "bg-blue-100 text-blue-700 border border-blue-300"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300"
-            }`}
-          >
-            <CalendarDays className="w-3 h-3 inline mr-1" />
-            This Week
-          </button>
-          <button
-            onClick={() => handleZoom("month")}
-            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-              activeZoom === "month"
-                ? "bg-blue-100 text-blue-700 border border-blue-300"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300"
-            }`}
-          >
-            <CalendarRange className="w-3 h-3 inline mr-1" />
-            This Month
-          </button>
-          <button
-            onClick={() => handleZoom("all")}
-            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-              activeZoom === "all"
-                ? "bg-blue-100 text-blue-700 border border-blue-300"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300"
-            }`}
-          >
-            <Maximize2 className="w-3 h-3 inline mr-1" />
-            Fit All
-          </button>
+            <option value="day">Day</option>
+            <option value="week">Week</option>
+            <option value="month">Month</option>
+            <option value="year">Year</option>
+            <option value="overall">Overall</option>
+          </select>
         </div>
       </div>
 

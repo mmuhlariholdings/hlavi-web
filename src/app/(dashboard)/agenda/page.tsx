@@ -6,7 +6,7 @@ import { useTasks } from "@/hooks/useTasks";
 import { DateSelector } from "@/components/agenda/DateSelector";
 import { AgendaDateSection } from "@/components/agenda/AgendaDateSection";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { Calendar } from "lucide-react";
+import { Calendar, ArrowUp, CalendarCheck } from "lucide-react";
 import { format, startOfWeek, endOfWeek, startOfDay, endOfDay, startOfMonth, endOfMonth, startOfYear, endOfYear, parseISO, isWithinInterval, eachDayOfInterval, max, min, isSameDay } from "date-fns";
 import Link from "next/link";
 import { BranchInitializer } from "@/components/dashboard/BranchInitializer";
@@ -162,6 +162,20 @@ export default function AgendaPage() {
     );
   }
 
+  const scrollToTop = useCallback(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+
+  const scrollToToday = useCallback(() => {
+    const today = startOfDay(new Date());
+    const todayKey = format(today, "yyyy-MM-dd");
+    const todayRef = dateRefs.current.get(todayKey);
+
+    if (todayRef) {
+      todayRef.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, []);
+
   return (
     <div className="space-y-6">
       <BranchInitializer />
@@ -222,6 +236,31 @@ export default function AgendaPage() {
               />
             );
           })}
+        </div>
+      )}
+
+      {/* Floating Action Buttons */}
+      {hasAnyTasks && (
+        <div className="fixed bottom-6 right-6 flex flex-col gap-3 z-50">
+          {/* Scroll to Top Button */}
+          <button
+            onClick={scrollToTop}
+            className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg p-4 shadow-lg transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            aria-label="Scroll to top"
+            title="Scroll to top"
+          >
+            <ArrowUp className="w-6 h-6" />
+          </button>
+
+          {/* Jump to Today Button */}
+          <button
+            onClick={scrollToToday}
+            className="bg-green-600 hover:bg-green-700 text-white rounded-lg p-4 shadow-lg transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+            aria-label="Jump to today"
+            title="Jump to today"
+          >
+            <CalendarCheck className="w-6 h-6" />
+          </button>
         </div>
       )}
     </div>

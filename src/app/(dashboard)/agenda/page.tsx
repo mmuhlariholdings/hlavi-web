@@ -4,10 +4,10 @@ import { useState, useEffect, useMemo } from "react";
 import { useRepository } from "@/contexts/RepositoryContext";
 import { useTasks } from "@/hooks/useTasks";
 import { DateSelector } from "@/components/agenda/DateSelector";
-import { AgendaSection } from "@/components/agenda/AgendaSection";
+import { AgendaDateSection } from "@/components/agenda/AgendaDateSection";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { PlayCircle, CheckCircle2, AlertTriangle, Calendar, Clock, Circle, Eye, XCircle } from "lucide-react";
-import { format, isWithinInterval, isSameDay, startOfWeek, endOfWeek, isBefore, startOfDay, endOfDay, startOfMonth, endOfMonth, startOfYear, endOfYear } from "date-fns";
+import { Calendar } from "lucide-react";
+import { format, startOfWeek, endOfWeek, startOfDay, endOfDay, startOfMonth, endOfMonth, startOfYear, endOfYear, parseISO, isWithinInterval, eachDayOfInterval, max, min } from "date-fns";
 import Link from "next/link";
 import { BranchInitializer } from "@/components/dashboard/BranchInitializer";
 
@@ -17,10 +17,9 @@ export default function AgendaPage() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [viewPeriod, setViewPeriod] = useState<"day" | "week" | "month" | "year">("day");
 
-  // Filter tasks based on selected date - grouped by status for planning
-  const filteredTasks = useMemo(() => {
+  // Group tasks by date chronologically (tasks appear on every day they span)
+  const tasksByDate = useMemo(() => {
     const tasks = data?.tasks || [];
-    const selectedDay = startOfDay(selectedDate);
 
     // Determine the viewing period based on viewPeriod state
     let periodStart: Date;
@@ -46,121 +45,54 @@ export default function AgendaPage() {
         break;
     }
 
-    // Get all tasks that are relevant to this period
-    // (either active during this period or scheduled to start/end)
+    // Filter tasks that fall within the viewing period and have dates
     const relevantTasks = tasks.filter((task) => {
-      // Include tasks without dates
-      if (!task.start_date && !task.end_date) return true;
+      if (!task.start_date) return false; // Only show tasks with start dates
 
-      const taskStart = task.start_date ? new Date(task.start_date) : null;
-      const taskEnd = task.end_date ? new Date(task.end_date) : null;
+      const taskStart = new Date(task.start_date);
+      const taskEnd = task.end_date ? new Date(task.end_date) : taskStart;
 
-      // Include tasks where date ranges overlap with viewing period
-      // Overlap occurs if: task.start <= period.end AND task.end >= period.start
-      if (taskStart && taskEnd) {
-        return taskStart <= periodEnd && taskEnd >= periodStart;
-      }
-
-      // Include tasks that only have start date and it falls within period
-      if (taskStart && !taskEnd) {
-        return taskStart >= periodStart && taskStart <= periodEnd;
-      }
-
-      // Include tasks that only have end date and it falls within period
-      if (taskEnd && !taskStart) {
-        return taskEnd >= periodStart && taskEnd <= periodEnd;
-      }
-
-      return false;
+      // Check if task overlaps with viewing period
+      return taskStart <= periodEnd && taskEnd >= periodStart;
     });
 
-    // Group by status for planning
-    const overdue = relevantTasks.filter((task) => {
-      if (!task.end_date) return false;
-      const endDate = new Date(task.end_date);
-      return (
-        isBefore(endDate, selectedDay) &&
-        task.status !== "done" &&
-        task.status !== "closed"
-      );
-    });
+    // Group tasks by date - each task appears on every day it spans
+    const grouped = new Map<string, typeof tasks>();
 
-    const notStarted = relevantTasks.filter(
-      (task) =>
-        (task.status === "new" || task.status === "open") &&
-        !overdue.includes(task)
-    );
+    relevantTasks.forEach((task) => {
+      const taskStart = new Date(task.start_date!);
+      const taskEnd = task.end_date ? new Date(task.end_date) : taskStart;
 
-    const inProgress = relevantTasks.filter(
-      (task) => task.status === "inprogress" && !overdue.includes(task)
-    );
+      // Calculate the intersection of task range and viewing period
+      const rangeStart = max([taskStart, periodStart]);
+      const rangeEnd = min([taskEnd, periodEnd]);
 
-    const inReview = relevantTasks.filter(
-      (task) => task.status === "review" && !overdue.includes(task)
-    );
+      // Generate all dates this task spans within the viewing period
+      const datesSpanned = eachDayOfInterval({ start: rangeStart, end: rangeEnd });
 
-    const blocked = relevantTasks.filter(
-      (task) => task.status === "pending" && !overdue.includes(task)
-    );
+      datesSpanned.forEach((date) => {
+        const dateKey = format(date, "yyyy-MM-dd");
 
-    const completed = relevantTasks.filter(
-      (task) => task.status === "done" || task.status === "closed"
-    );
-
-    // Debug logging to understand categorization
-    const statusBreakdown = tasks.reduce((acc, task) => {
-      acc[task.status] = (acc[task.status] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-
-    const tasksNotShowing = tasks.filter(t => !relevantTasks.includes(t));
-
-    console.log('=== AGENDA DEBUG ===');
-    console.log('View Period:', viewPeriod);
-    console.log('Selected Date:', format(selectedDate, 'yyyy-MM-dd'));
-    console.log('Period Range:', format(periodStart, 'yyyy-MM-dd'), 'to', format(periodEnd, 'yyyy-MM-dd'));
-    console.log('Total Tasks in Repo:', tasks.length);
-    console.log('Status Breakdown (ALL tasks):', statusBreakdown);
-    console.log('\nTasks Relevant to Selected Date:', relevantTasks.length);
-    console.log('Categorization:', {
-      overdue: overdue.length,
-      notStarted: notStarted.length,
-      inProgress: inProgress.length,
-      inReview: inReview.length,
-      blocked: blocked.length,
-      completed: completed.length,
-    });
-    console.log('\nRelevant Tasks Details:');
-    relevantTasks.forEach(t => {
-      console.log(`  ${t.id} | ${t.status.padEnd(10)} | ${t.start_date || 'no start'} to ${t.end_date || 'no end'} | ${t.title.substring(0, 40)}`);
-    });
-    console.log('\nTasks NOT showing (filtered out by date):', tasksNotShowing.length);
-    if (tasksNotShowing.length > 0) {
-      console.log('Not Showing:');
-      tasksNotShowing.forEach(t => {
-        console.log(`  ${t.id} | ${t.status.padEnd(10)} | ${t.start_date || 'no start'} to ${t.end_date || 'no end'} | ${t.title.substring(0, 40)}`);
+        if (!grouped.has(dateKey)) {
+          grouped.set(dateKey, []);
+        }
+        grouped.get(dateKey)!.push(task);
       });
-    }
-    console.log('===================\n');
+    });
 
-    return {
-      overdue,
-      notStarted,
-      inProgress,
-      inReview,
-      blocked,
-      completed,
-    };
+    // Convert to sorted array of [date, tasks] entries
+    const sortedEntries = Array.from(grouped.entries())
+      .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
+      .map(([dateStr, tasks]) => ({
+        date: parseISO(dateStr),
+        tasks,
+      }));
+
+    return sortedEntries;
   }, [data, selectedDate, viewPeriod]);
 
   // Check if there are any tasks for this period
-  const hasAnyTasks =
-    filteredTasks.overdue.length > 0 ||
-    filteredTasks.notStarted.length > 0 ||
-    filteredTasks.inProgress.length > 0 ||
-    filteredTasks.inReview.length > 0 ||
-    filteredTasks.blocked.length > 0 ||
-    filteredTasks.completed.length > 0;
+  const hasAnyTasks = tasksByDate.length > 0;
 
   if (!owner || !repo) {
     return (
@@ -249,62 +181,10 @@ export default function AgendaPage() {
           </p>
         </div>
       ) : (
-        <div className="space-y-4">
-          {/* Overdue Tasks */}
-          {filteredTasks.overdue.length > 0 && (
-            <AgendaSection
-              title="Overdue"
-              tasks={filteredTasks.overdue}
-              icon={<AlertTriangle className="w-5 h-5 text-red-600" />}
-              variant="warning"
-            />
-          )}
-
-          {/* Not Started */}
-          {filteredTasks.notStarted.length > 0 && (
-            <AgendaSection
-              title="To Do"
-              tasks={filteredTasks.notStarted}
-              icon={<Circle className="w-5 h-5 text-gray-600" />}
-            />
-          )}
-
-          {/* In Progress */}
-          {filteredTasks.inProgress.length > 0 && (
-            <AgendaSection
-              title="In Progress"
-              tasks={filteredTasks.inProgress}
-              icon={<Clock className="w-5 h-5 text-blue-600" />}
-            />
-          )}
-
-          {/* In Review */}
-          {filteredTasks.inReview.length > 0 && (
-            <AgendaSection
-              title="In Review"
-              tasks={filteredTasks.inReview}
-              icon={<Eye className="w-5 h-5 text-purple-600" />}
-            />
-          )}
-
-          {/* Blocked/Pending */}
-          {filteredTasks.blocked.length > 0 && (
-            <AgendaSection
-              title="Blocked"
-              tasks={filteredTasks.blocked}
-              icon={<XCircle className="w-5 h-5 text-orange-600" />}
-            />
-          )}
-
-          {/* Completed */}
-          {filteredTasks.completed.length > 0 && (
-            <AgendaSection
-              title="Completed"
-              tasks={filteredTasks.completed}
-              icon={<CheckCircle2 className="w-5 h-5 text-green-600" />}
-              variant="success"
-            />
-          )}
+        <div className="space-y-0">
+          {tasksByDate.map(({ date, tasks }) => (
+            <AgendaDateSection key={format(date, "yyyy-MM-dd")} date={date} tasks={tasks} />
+          ))}
         </div>
       )}
     </div>

@@ -311,6 +311,22 @@ export class GitHubService {
     }
 
     try {
+      // Check if task file already exists (get SHA if it does)
+      let existingFileSha: string | undefined;
+      try {
+        const { data: existingFile } = await this.octokit.repos.getContent({
+          owner,
+          repo,
+          path: `.hlavi/tasks/${taskId}.json`,
+          ...(branch && { ref: branch }),
+        });
+        if ("sha" in existingFile) {
+          existingFileSha = existingFile.sha;
+        }
+      } catch (error) {
+        // File doesn't exist, which is expected for new tasks
+      }
+
       // Create task file
       await this.octokit.repos.createOrUpdateFileContents({
         owner,
@@ -318,6 +334,7 @@ export class GitHubService {
         path: `.hlavi/tasks/${taskId}.json`,
         message: `Create task ${taskId}: ${taskData.title}`,
         content: Buffer.from(JSON.stringify(newTask, null, 2)).toString("base64"),
+        ...(existingFileSha && { sha: existingFileSha }),
         ...(branch && { branch }),
       });
 
@@ -399,6 +416,22 @@ export class GitHubService {
     };
 
     try {
+      // Check if board.json already exists
+      let boardFileSha: string | undefined;
+      try {
+        const { data: existingBoardFile } = await this.octokit.repos.getContent({
+          owner,
+          repo,
+          path: ".hlavi/board.json",
+          ...(branch && { ref: branch }),
+        });
+        if ("sha" in existingBoardFile) {
+          boardFileSha = existingBoardFile.sha;
+        }
+      } catch (error) {
+        // File doesn't exist, which is expected for new initialization
+      }
+
       // Create board.json
       await this.octokit.repos.createOrUpdateFileContents({
         owner,
@@ -406,8 +439,25 @@ export class GitHubService {
         path: ".hlavi/board.json",
         message: "Initialize Hlavi: Add board configuration",
         content: Buffer.from(JSON.stringify(defaultBoard, null, 2)).toString("base64"),
+        ...(boardFileSha && { sha: boardFileSha }),
         ...(branch && { branch }),
       });
+
+      // Check if example task already exists
+      let exampleTaskSha: string | undefined;
+      try {
+        const { data: existingTaskFile } = await this.octokit.repos.getContent({
+          owner,
+          repo,
+          path: ".hlavi/tasks/HLA1.json",
+          ...(branch && { ref: branch }),
+        });
+        if ("sha" in existingTaskFile) {
+          exampleTaskSha = existingTaskFile.sha;
+        }
+      } catch (error) {
+        // File doesn't exist, which is expected for new initialization
+      }
 
       // Create example task
       await this.octokit.repos.createOrUpdateFileContents({
@@ -416,6 +466,7 @@ export class GitHubService {
         path: ".hlavi/tasks/HLA1.json",
         message: "Initialize Hlavi: Add example task",
         content: Buffer.from(JSON.stringify(exampleTask, null, 2)).toString("base64"),
+        ...(exampleTaskSha && { sha: exampleTaskSha }),
         ...(branch && { branch }),
       });
     } catch (error) {

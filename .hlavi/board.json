@@ -38,7 +38,8 @@
     "HLA1": "open",
     "HLA2": "new",
     "HLA3": "new",
-    "HLA4": "new"
+    "HLA4": "new",
+    "HLA5": "new"
   },
-  "next_task_number": 5
+  "next_task_number": 6
 }

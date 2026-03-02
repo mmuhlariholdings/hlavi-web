@@ -35,7 +35,8 @@
     ]
   },
   "tasks": {
-    "HLA1": "open"
+    "HLA1": "open",
+    "HLA2": "new"
   },
-  "next_task_number": 2
+  "next_task_number": 3
 }

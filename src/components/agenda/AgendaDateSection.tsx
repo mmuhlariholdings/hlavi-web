@@ -1,7 +1,7 @@
 "use client";
 
 import { format, isToday, isTomorrow, isYesterday } from "date-fns";
-import { Calendar } from "lucide-react";
+import { Calendar, Zap } from "lucide-react";
 import Link from "next/link";
 import { Task } from "@/lib/types";
 import { stripMarkdown } from "@/lib/utils";
@@ -153,6 +153,12 @@ export const AgendaDateSection = forwardRef<HTMLDivElement, AgendaDateSectionPro
                       <span>
                         {completedCriteria}/{totalCriteria}
                       </span>
+                    </div>
+                  )}
+                  {task.effort != null && (
+                    <div className="flex items-center gap-1 text-violet-500" title="Effort">
+                      <Zap className="w-3 h-3" />
+                      <span className="font-medium">{task.effort}</span>
                     </div>
                   )}
                 </div>

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Task } from "@/lib/types";
 import { TaskStatusBadge } from "../tasks/TaskStatusBadge";
-import { CheckCircle2, Link2 } from "lucide-react";
+import { CheckCircle2, Link2, Zap } from "lucide-react";
 import { formatDate, stripMarkdown } from "@/lib/utils";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -48,6 +48,12 @@ export function TaskCard({ task }: TaskCardProps) {
             >
               <Link2 className="w-4 h-4" />
               <span className="text-xs">{task.blocks.length}</span>
+            </div>
+          )}
+          {task.effort != null && (
+            <div className="flex items-center gap-1 text-violet-500" title="Effort">
+              <Zap className="w-3.5 h-3.5" />
+              <span className="text-xs font-medium">{task.effort}</span>
             </div>
           )}
         </div>

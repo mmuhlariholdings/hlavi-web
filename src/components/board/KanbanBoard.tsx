@@ -23,9 +23,10 @@ import { useRepository } from "@/contexts/RepositoryContext";
 interface KanbanBoardProps {
   tasks: Task[];
   boardConfig: BoardConfig;
+  isDragEnabled?: boolean;
 }
 
-export function KanbanBoard({ tasks, boardConfig }: KanbanBoardProps) {
+export function KanbanBoard({ tasks, boardConfig, isDragEnabled = false }: KanbanBoardProps) {
   const [collapsedColumns, setCollapsedColumns] = useState<Set<string>>(
     new Set()
   );
@@ -233,6 +234,7 @@ export function KanbanBoard({ tasks, boardConfig }: KanbanBoardProps) {
                 tasks={columnTasks}
                 isCollapsed={collapsedColumns.has(column.status)}
                 onToggleCollapse={() => toggleColumn(column.status)}
+                isDragEnabled={isDragEnabled}
               />
             );
           })}

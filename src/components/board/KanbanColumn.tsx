@@ -1,7 +1,7 @@
 "use client";
 
 import { Task, BoardColumn } from "@/lib/types";
-import { SortableTaskCard } from "./TaskCard";
+import { SortableTaskCard, TaskCard } from "./TaskCard";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
@@ -11,6 +11,7 @@ interface KanbanColumnProps {
   tasks: Task[];
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
+  isDragEnabled?: boolean;
 }
 
 export function KanbanColumn({
@@ -18,6 +19,7 @@ export function KanbanColumn({
   tasks,
   isCollapsed = false,
   onToggleCollapse,
+  isDragEnabled = false,
 }: KanbanColumnProps) {
   const { setNodeRef, isOver } = useDroppable({ id: column.status });
 
@@ -69,7 +71,11 @@ export function KanbanColumn({
               ) : (
                 tasks.map((task) => (
                   <div key={task.id} className="mb-3 last:mb-0">
-                    <SortableTaskCard task={task} />
+                    {isDragEnabled ? (
+                      <SortableTaskCard task={task} />
+                    ) : (
+                      <TaskCard task={task} />
+                    )}
                   </div>
                 ))
               )}

@@ -33,6 +33,7 @@ export interface Task {
   parent?: string | null;
   blocks?: string[];
   rank?: number;
+  effort?: number | null;
 }
 
 // Board Configuration

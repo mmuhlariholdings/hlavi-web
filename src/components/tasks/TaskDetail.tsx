@@ -5,7 +5,7 @@ import { Task, TaskStatus } from "@/lib/types";
 import { TaskStatusBadge } from "./TaskStatusBadge";
 import { AcceptanceCriteriaList } from "./AcceptanceCriteriaList";
 import { formatDate } from "@/lib/utils";
-import { Calendar, Clock, Edit2, X, Save, Plus, Link2, GitBranch } from "lucide-react";
+import { Calendar, Clock, Edit2, X, Save, Plus, Link2, GitBranch, Zap } from "lucide-react";
 import { useUpdateTask } from "@/hooks/useUpdateTask";
 import { useAddAcceptanceCriteria } from "@/hooks/useAcceptanceCriteria";
 import { useRepository } from "@/contexts/RepositoryContext";
@@ -35,7 +35,6 @@ export function TaskDetail({ task }: TaskDetailProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [newCriteriaDescription, setNewCriteriaDescription] = useState("");
 
-  // Edit-mode state (title, description, status, dates only)
   const [editedTitle, setEditedTitle] = useState(task.title);
   const [editedDescription, setEditedDescription] = useState(task.description || "");
   const [editedStatus, setEditedStatus] = useState(task.status);
@@ -44,6 +43,9 @@ export function TaskDetail({ task }: TaskDetailProps) {
   );
   const [editedEndDate, setEditedEndDate] = useState(
     task.end_date ? format(new Date(task.end_date), "yyyy-MM-dd") : ""
+  );
+  const [editedEffort, setEditedEffort] = useState(
+    task.effort != null ? String(task.effort) : ""
   );
 
   const allOtherTasks = (tasksData?.tasks || [])
@@ -55,7 +57,6 @@ export function TaskDetail({ task }: TaskDetailProps) {
     return t ? `${id}: ${t.title}` : id;
   };
 
-  // Inline mutations
   const saveParent = (parentId: string | null) => {
     if (!owner || !repo) return;
     updateTask.mutate({ owner, repo, branch, taskId: task.id, updates: { parent: parentId } });
@@ -79,6 +80,7 @@ export function TaskDetail({ task }: TaskDetailProps) {
 
   const handleSave = async () => {
     if (!owner || !repo) return;
+    const effortNum = editedEffort.trim() !== "" ? parseInt(editedEffort, 10) : null;
     try {
       await updateTask.mutateAsync({
         owner,
@@ -91,6 +93,7 @@ export function TaskDetail({ task }: TaskDetailProps) {
           status: editedStatus,
           start_date: editedStartDate ? new Date(editedStartDate).toISOString() : null,
           end_date: editedEndDate ? new Date(editedEndDate).toISOString() : null,
+          effort: effortNum ?? undefined,
         },
       });
       setIsEditing(false);
@@ -105,6 +108,7 @@ export function TaskDetail({ task }: TaskDetailProps) {
     setEditedStatus(task.status);
     setEditedStartDate(task.start_date ? format(new Date(task.start_date), "yyyy-MM-dd") : "");
     setEditedEndDate(task.end_date ? format(new Date(task.end_date), "yyyy-MM-dd") : "");
+    setEditedEffort(task.effort != null ? String(task.effort) : "");
     setIsEditing(false);
   };
 
@@ -138,7 +142,7 @@ export function TaskDetail({ task }: TaskDetailProps) {
               type="text"
               value={editedTitle}
               onChange={(e) => setEditedTitle(e.target.value)}
-              className="w-full text-2xl md:text-3xl font-bold mb-3 border-b-2 border-blue-500 focus:outline-none bg-transparent"
+              className="w-full text-xl font-semibold mb-3 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               autoFocus
             />
           ) : (
@@ -164,36 +168,15 @@ export function TaskDetail({ task }: TaskDetailProps) {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          {isEditing ? (
-            <>
-              <button
-                onClick={handleCancel}
-                disabled={updateTask.isPending}
-                className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-                title="Cancel"
-              >
-                <X className="w-5 h-5" />
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={updateTask.isPending}
-                className="p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
-                title="Save changes"
-              >
-                <Save className="w-5 h-5" />
-              </button>
-            </>
-          ) : (
-            <button
-              onClick={() => setIsEditing(true)}
-              className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-              title="Edit task"
-            >
-              <Edit2 className="w-5 h-5" />
-            </button>
-          )}
-        </div>
+        {!isEditing && (
+          <button
+            onClick={() => setIsEditing(true)}
+            className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+            title="Edit task"
+          >
+            <Edit2 className="w-5 h-5" />
+          </button>
+        )}
       </div>
 
       {/* Description */}
@@ -250,6 +233,27 @@ export function TaskDetail({ task }: TaskDetailProps) {
               ) : (
                 <p className="text-sm font-medium text-gray-900 break-words">
                   {task.end_date ? formatDate(task.end_date) : <span className="text-gray-400">Not set</span>}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-start gap-2 p-3 bg-gray-50 rounded-lg">
+            <Zap className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-gray-600 mb-0.5">Effort</p>
+              {isEditing ? (
+                <input
+                  type="number"
+                  min="1"
+                  value={editedEffort}
+                  onChange={(e) => setEditedEffort(e.target.value)}
+                  placeholder="e.g. 3"
+                  className="text-sm font-medium text-gray-900 border border-gray-300 rounded px-2 py-1 w-24 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              ) : (
+                <p className="text-sm font-medium text-gray-900">
+                  {task.effort != null ? task.effort : <span className="text-gray-400">Not estimated</span>}
                 </p>
               )}
             </div>
@@ -412,6 +416,27 @@ export function TaskDetail({ task }: TaskDetailProps) {
         <div className="bg-red-50 border border-red-200 rounded-lg p-3 md:p-4">
           <h3 className="text-sm md:text-base font-medium text-red-900 mb-2">Rejection Reason</h3>
           <p className="text-xs md:text-sm text-red-800 break-words">{task.rejection_reason}</p>
+        </div>
+      )}
+
+      {/* Form actions — only shown in edit mode */}
+      {isEditing && (
+        <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
+          <button
+            onClick={handleCancel}
+            disabled={updateTask.isPending}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={updateTask.isPending || !editedTitle.trim()}
+            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+          >
+            <Save className="w-4 h-4" />
+            {updateTask.isPending ? "Saving..." : "Save changes"}
+          </button>
         </div>
       )}
     </div>

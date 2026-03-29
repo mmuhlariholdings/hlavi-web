@@ -35,6 +35,7 @@ export function TaskDetail({ task }: TaskDetailProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [newCriteriaDescription, setNewCriteriaDescription] = useState("");
 
+  // Edit-mode state (title, description, status, dates only)
   const [editedTitle, setEditedTitle] = useState(task.title);
   const [editedDescription, setEditedDescription] = useState(task.description || "");
   const [editedStatus, setEditedStatus] = useState(task.status);
@@ -44,8 +45,6 @@ export function TaskDetail({ task }: TaskDetailProps) {
   const [editedEndDate, setEditedEndDate] = useState(
     task.end_date ? format(new Date(task.end_date), "yyyy-MM-dd") : ""
   );
-  const [editedParent, setEditedParent] = useState<string | null>(task.parent || null);
-  const [editedBlocks, setEditedBlocks] = useState<string[]>(task.blocks || []);
 
   const allOtherTasks = (tasksData?.tasks || [])
     .filter((t) => t.id !== task.id)
@@ -54,6 +53,28 @@ export function TaskDetail({ task }: TaskDetailProps) {
   const getTaskLabel = (id: string) => {
     const t = (tasksData?.tasks || []).find((t) => t.id === id);
     return t ? `${id}: ${t.title}` : id;
+  };
+
+  // Inline mutations
+  const saveParent = (parentId: string | null) => {
+    if (!owner || !repo) return;
+    updateTask.mutate({ owner, repo, branch, taskId: task.id, updates: { parent: parentId } });
+  };
+
+  const addBlock = (blockedId: string) => {
+    if (!owner || !repo) return;
+    updateTask.mutate({
+      owner, repo, branch, taskId: task.id,
+      updates: { blocks: [...(task.blocks || []), blockedId] },
+    });
+  };
+
+  const removeBlock = (blockedId: string) => {
+    if (!owner || !repo) return;
+    updateTask.mutate({
+      owner, repo, branch, taskId: task.id,
+      updates: { blocks: (task.blocks || []).filter((id) => id !== blockedId) },
+    });
   };
 
   const handleSave = async () => {
@@ -70,8 +91,6 @@ export function TaskDetail({ task }: TaskDetailProps) {
           status: editedStatus,
           start_date: editedStartDate ? new Date(editedStartDate).toISOString() : null,
           end_date: editedEndDate ? new Date(editedEndDate).toISOString() : null,
-          parent: editedParent,
-          blocks: editedBlocks,
         },
       });
       setIsEditing(false);
@@ -86,8 +105,6 @@ export function TaskDetail({ task }: TaskDetailProps) {
     setEditedStatus(task.status);
     setEditedStartDate(task.start_date ? format(new Date(task.start_date), "yyyy-MM-dd") : "");
     setEditedEndDate(task.end_date ? format(new Date(task.end_date), "yyyy-MM-dd") : "");
-    setEditedParent(task.parent || null);
-    setEditedBlocks(task.blocks || []);
     setIsEditing(false);
   };
 
@@ -107,6 +124,9 @@ export function TaskDetail({ task }: TaskDetailProps) {
       console.error("Failed to add acceptance criteria:", error);
     }
   };
+
+  const currentBlocks = task.blocks || [];
+  const blockedByParent = task.parent ? [task.parent] : [];
 
   return (
     <div className="space-y-6">
@@ -253,116 +273,101 @@ export function TaskDetail({ task }: TaskDetailProps) {
         </div>
       </div>
 
-      {/* Parent Task */}
+      {/* Parent Task — always-on inline */}
       <div>
         <h2 className="text-base md:text-lg font-semibold mb-3 flex items-center gap-2">
           <GitBranch className="w-4 h-4 text-purple-500" />
           Parent Task
         </h2>
-        {isEditing ? (
-          <select
-            value={editedParent || ""}
-            onChange={(e) => setEditedParent(e.target.value || null)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-400 focus:border-transparent text-sm"
-          >
-            <option value="">None</option>
-            {allOtherTasks
-              .filter((t) => !editedBlocks.includes(t.id))
-              .map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.id}: {t.title}
-                </option>
-              ))}
-          </select>
-        ) : task.parent ? (
-          <a
-            href={`/tasks/${task.parent}`}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 border border-purple-200 rounded-lg text-sm font-medium text-purple-700 hover:bg-purple-100 transition-colors"
-          >
-            <GitBranch className="w-3.5 h-3.5" />
-            {getTaskLabel(task.parent)}
-          </a>
-        ) : (
-          <p className="text-sm text-gray-400 italic">No parent task</p>
-        )}
-      </div>
-
-      {/* Blocks */}
-      <div>
-        <h2 className="text-base md:text-lg font-semibold mb-3 flex items-center gap-2">
-          <Link2 className="w-4 h-4 text-orange-500" />
-          Blocks
-          {(isEditing ? editedBlocks : (task.blocks || [])).length > 0 && (
-            <span className="text-sm font-normal text-gray-500">
-              ({(isEditing ? editedBlocks : (task.blocks || [])).length})
-            </span>
-          )}
-        </h2>
-
-        {!isEditing && (
-          (task.blocks || []).length === 0 ? (
-            <p className="text-sm text-gray-400 italic">No tasks blocked by this task</p>
-          ) : (
-            <div className="flex flex-wrap gap-2">
-              {task.blocks!.map((blockedId) => (
-                <a
-                  key={blockedId}
-                  href={`/tasks/${blockedId}`}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 border border-orange-200 rounded-lg text-sm font-medium text-orange-700 hover:bg-orange-100 transition-colors"
-                >
-                  <Link2 className="w-3.5 h-3.5" />
-                  {getTaskLabel(blockedId)}
-                </a>
-              ))}
+        <div className="space-y-2">
+          {task.parent && (
+            <div className="flex items-center gap-2 group w-fit">
+              <a
+                href={`/tasks/${task.parent}`}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 border border-purple-200 rounded-lg text-sm font-medium text-purple-700 hover:bg-purple-100 transition-colors"
+              >
+                <GitBranch className="w-3.5 h-3.5" />
+                {getTaskLabel(task.parent)}
+              </a>
+              <button
+                onClick={() => saveParent(null)}
+                disabled={updateTask.isPending}
+                className="p-1 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
+                title="Remove parent"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
             </div>
-          )
-        )}
-
-        {isEditing && (
-          <div className="space-y-3">
-            {editedBlocks.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {editedBlocks.map((blockedId) => (
-                  <span
-                    key={blockedId}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 border border-orange-200 rounded-lg text-sm font-medium text-orange-700"
-                  >
-                    <Link2 className="w-3.5 h-3.5" />
-                    {getTaskLabel(blockedId)}
-                    <button
-                      onClick={() =>
-                        setEditedBlocks((prev) => prev.filter((id) => id !== blockedId))
-                      }
-                      className="ml-1 text-orange-400 hover:text-orange-600 transition-colors"
-                      title={`Remove ${blockedId}`}
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </span>
-                ))}
-              </div>
-            )}
+          )}
+          {!task.parent && (
             <select
               value=""
-              onChange={(e) => {
-                const id = e.target.value;
-                if (id && !editedBlocks.includes(id)) {
-                  setEditedBlocks((prev) => [...prev, id]);
-                }
-              }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-sm"
+              onChange={(e) => { if (e.target.value) saveParent(e.target.value); }}
+              disabled={updateTask.isPending}
+              className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-400 focus:border-transparent text-sm text-gray-500 bg-white"
             >
-              <option value="">Add a blocked task...</option>
+              <option value="">Set parent task...</option>
               {allOtherTasks
-                .filter((t) => !editedBlocks.includes(t.id) && t.id !== editedParent)
+                .filter((t) => !currentBlocks.includes(t.id))
                 .map((t) => (
                   <option key={t.id} value={t.id}>
                     {t.id}: {t.title}
                   </option>
                 ))}
             </select>
-          </div>
-        )}
+          )}
+        </div>
+      </div>
+
+      {/* Blocks — always-on inline */}
+      <div>
+        <h2 className="text-base md:text-lg font-semibold mb-3 flex items-center gap-2">
+          <Link2 className="w-4 h-4 text-orange-500" />
+          Blocks
+          {currentBlocks.length > 0 && (
+            <span className="text-sm font-normal text-gray-500">({currentBlocks.length})</span>
+          )}
+        </h2>
+        <div className="space-y-2">
+          {currentBlocks.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {currentBlocks.map((blockedId) => (
+                <div key={blockedId} className="flex items-center gap-1 group">
+                  <a
+                    href={`/tasks/${blockedId}`}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 border border-orange-200 rounded-lg text-sm font-medium text-orange-700 hover:bg-orange-100 transition-colors"
+                  >
+                    <Link2 className="w-3.5 h-3.5" />
+                    {getTaskLabel(blockedId)}
+                  </a>
+                  <button
+                    onClick={() => removeBlock(blockedId)}
+                    disabled={updateTask.isPending}
+                    className="p-1 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
+                    title={`Remove ${blockedId}`}
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          <select
+            value=""
+            onChange={(e) => { if (e.target.value) addBlock(e.target.value); }}
+            disabled={updateTask.isPending}
+            className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-sm text-gray-500 bg-white"
+          >
+            <option value="">Add blocked task...</option>
+            {allOtherTasks
+              .filter((t) => !currentBlocks.includes(t.id) && t.id !== task.parent && !blockedByParent.includes(t.id))
+              .map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.id}: {t.title}
+                </option>
+              ))}
+          </select>
+        </div>
       </div>
 
       {/* Acceptance Criteria */}

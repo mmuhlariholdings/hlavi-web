@@ -37,7 +37,7 @@ export function TaskSort({ value, onChange }: TaskSortProps) {
         onChange={(e) => onChange(e.target.value as SortOption)}
         className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
       >
-        <option value="rank">Board Order (Rank)</option>
+        <option value="rank">Default (Rank)</option>
         <option value="created-newest">Created (Newest)</option>
         <option value="created-oldest">Created (Oldest)</option>
         <option value="updated-newest">Updated (Newest)</option>

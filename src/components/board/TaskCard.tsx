@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Task } from "@/lib/types";
 import { TaskStatusBadge } from "../tasks/TaskStatusBadge";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Link2 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 
 interface TaskCardProps {
@@ -32,11 +32,19 @@ export function TaskCard({ task }: TaskCardProps) {
         </p>
       )}
       <div className="flex items-center justify-between text-sm text-gray-500">
-        <div className="flex items-center gap-1">
-          <CheckCircle2 className="w-4 h-4" />
-          <span>
-            {completedAC}/{totalAC}
-          </span>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
+            <CheckCircle2 className="w-4 h-4" />
+            <span>
+              {completedAC}/{totalAC}
+            </span>
+          </div>
+          {task.blocks && task.blocks.length > 0 && (
+            <div className="flex items-center gap-1 text-orange-500" title={`Blocks: ${task.blocks.join(", ")}`}>
+              <Link2 className="w-4 h-4" />
+              <span className="text-xs">{task.blocks.length}</span>
+            </div>
+          )}
         </div>
         {task.end_date && (
           <span className="text-xs">

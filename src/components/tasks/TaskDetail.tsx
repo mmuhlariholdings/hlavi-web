@@ -5,7 +5,7 @@ import { Task, TaskStatus } from "@/lib/types";
 import { TaskStatusBadge } from "./TaskStatusBadge";
 import { AcceptanceCriteriaList } from "./AcceptanceCriteriaList";
 import { formatDate } from "@/lib/utils";
-import { Calendar, Clock, Edit2, X, Save, Plus } from "lucide-react";
+import { Calendar, Clock, Edit2, X, Save, Plus, Link2 } from "lucide-react";
 import { useUpdateTask } from "@/hooks/useUpdateTask";
 import { useAddAcceptanceCriteria } from "@/hooks/useAcceptanceCriteria";
 import { useRepository } from "@/contexts/RepositoryContext";
@@ -42,6 +42,8 @@ export function TaskDetail({ task }: TaskDetailProps) {
   const [editedEndDate, setEditedEndDate] = useState(
     task.end_date ? format(new Date(task.end_date), "yyyy-MM-dd") : ""
   );
+  const [editedBlocks, setEditedBlocks] = useState<string[]>(task.blocks || []);
+  const [newBlockId, setNewBlockId] = useState("");
 
   const handleSave = async () => {
     if (!owner || !repo) return;
@@ -58,6 +60,7 @@ export function TaskDetail({ task }: TaskDetailProps) {
           status: editedStatus,
           start_date: editedStartDate ? new Date(editedStartDate).toISOString() : null,
           end_date: editedEndDate ? new Date(editedEndDate).toISOString() : null,
+          blocks: editedBlocks,
         },
       });
       setIsEditing(false);
@@ -76,6 +79,8 @@ export function TaskDetail({ task }: TaskDetailProps) {
     setEditedEndDate(
       task.end_date ? format(new Date(task.end_date), "yyyy-MM-dd") : ""
     );
+    setEditedBlocks(task.blocks || []);
+    setNewBlockId("");
     setIsEditing(false);
   };
 
@@ -284,6 +289,99 @@ export function TaskDetail({ task }: TaskDetailProps) {
             </button>
           </div>
         </form>
+      </div>
+
+      {/* Blocks */}
+      <div>
+        <h2 className="text-base md:text-lg font-semibold mb-3 flex items-center gap-2">
+          <Link2 className="w-4 h-4 text-orange-500" />
+          Blocks
+          {(isEditing ? editedBlocks : (task.blocks || [])).length > 0 && (
+            <span className="text-sm font-normal text-gray-500">
+              ({(isEditing ? editedBlocks : (task.blocks || [])).length})
+            </span>
+          )}
+        </h2>
+
+        {!isEditing && (
+          <>
+            {(task.blocks || []).length === 0 ? (
+              <p className="text-sm text-gray-400 italic">No tasks blocked by this task</p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {task.blocks!.map((blockedId) => (
+                  <a
+                    key={blockedId}
+                    href={`/tasks/${blockedId}`}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 border border-orange-200 rounded-lg text-sm font-medium text-orange-700 hover:bg-orange-100 transition-colors"
+                  >
+                    <Link2 className="w-3.5 h-3.5" />
+                    {blockedId}
+                  </a>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+
+        {isEditing && (
+          <div className="space-y-3">
+            {editedBlocks.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {editedBlocks.map((blockedId) => (
+                  <span
+                    key={blockedId}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 border border-orange-200 rounded-lg text-sm font-medium text-orange-700"
+                  >
+                    <Link2 className="w-3.5 h-3.5" />
+                    {blockedId}
+                    <button
+                      onClick={() => setEditedBlocks((prev) => prev.filter((id) => id !== blockedId))}
+                      className="ml-1 text-orange-400 hover:text-orange-600 transition-colors"
+                      title={`Remove ${blockedId}`}
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={newBlockId}
+                onChange={(e) => setNewBlockId(e.target.value.toUpperCase())}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    const id = newBlockId.trim();
+                    if (id && !editedBlocks.includes(id)) {
+                      setEditedBlocks((prev) => [...prev, id]);
+                      setNewBlockId("");
+                    }
+                  }
+                }}
+                placeholder="Add task ID (e.g. HLA3)..."
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-sm uppercase placeholder-normal"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  const id = newBlockId.trim();
+                  if (id && !editedBlocks.includes(id)) {
+                    setEditedBlocks((prev) => [...prev, id]);
+                    setNewBlockId("");
+                  }
+                }}
+                disabled={!newBlockId.trim() || editedBlocks.includes(newBlockId.trim())}
+                className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2 text-sm font-medium"
+              >
+                <Plus className="w-4 h-4" />
+                Add
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Agent Assignment Notice */}

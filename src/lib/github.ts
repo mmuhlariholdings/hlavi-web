@@ -286,6 +286,7 @@ export class GitHubService {
       rejection_reason: null,
       start_date: taskData.start_date || null,
       end_date: taskData.end_date || null,
+      blocks: [],
     };
 
     // Update board config
@@ -395,6 +396,7 @@ export class GitHubService {
       rejection_reason: null,
       start_date: now,
       end_date: weekFromNow,
+      blocks: [],
     };
 
     // Board configuration with the example task

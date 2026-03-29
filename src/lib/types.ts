@@ -30,6 +30,7 @@ export interface Task {
   rejection_reason: string | null;
   start_date?: string | null;
   end_date?: string | null;
+  blocks?: string[];
 }
 
 // Board Configuration

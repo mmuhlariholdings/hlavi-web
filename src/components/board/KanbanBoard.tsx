@@ -108,10 +108,11 @@ export function KanbanBoard({ tasks, boardConfig }: KanbanBoardProps) {
     });
   };
 
-  // Sort by rank desc; preserve incoming order for ties (secondary sort already applied)
+  // Sort by rank desc; most recently updated breaks ties so unranked tasks have a stable order
   const sortedTasks = [...optimisticTasks].sort((a, b) => {
     const rankDiff = (b.rank ?? 0) - (a.rank ?? 0);
-    return rankDiff !== 0 ? rankDiff : 0;
+    if (rankDiff !== 0) return rankDiff;
+    return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
   });
 
   const handleDragStart = (event: DragStartEvent) => {
@@ -149,24 +150,33 @@ export function KanbanBoard({ tasks, boardConfig }: KanbanBoardProps) {
       (t) => t.status === targetStatus && t.id !== draggedTask.id
     );
 
+    // Give every task in the column an effective rank based on its visual position.
+    // Tasks with rank=0 (never explicitly ranked) get a position-based rank so
+    // insertion math always has room to place a card between any two neighbours.
+    const effectiveTasks = columnTasks.map((t, i) => ({
+      ...t,
+      rank: (t.rank ?? 0) !== 0 ? t.rank! : (columnTasks.length - i) * 1000,
+    }));
+
     let newRank: number;
 
     if (overTaskId) {
-      const overIndex = columnTasks.findIndex((t) => t.id === overTaskId);
-      const taskBelow = columnTasks[overIndex];
-      const taskAbove = overIndex > 0 ? columnTasks[overIndex - 1] : null;
+      const overIndex = effectiveTasks.findIndex((t) => t.id === overTaskId);
+      const below = effectiveTasks[overIndex];
+      const above = overIndex > 0 ? effectiveTasks[overIndex - 1] : null;
 
-      if (!taskAbove) {
+      if (!above) {
         // Dropping at the top — leave room above for future drags
-        newRank = (taskBelow.rank ?? 0) + 1000;
+        newRank = below.rank + 1000;
       } else {
-        // Dropping between two tasks
-        newRank = (taskBelow.rank ?? 0) + 1;
+        // Midpoint between the two neighbours; fall back to below+1 if no gap
+        const mid = Math.floor((above.rank + below.rank) / 2);
+        newRank = mid !== below.rank ? mid : below.rank + 1;
       }
     } else {
       // Dropped on the column itself (empty column or below all tasks)
-      const lastTask = columnTasks[columnTasks.length - 1];
-      newRank = lastTask ? (lastTask.rank ?? 0) - 1 : 0;
+      const lastTask = effectiveTasks[effectiveTasks.length - 1];
+      newRank = lastTask ? lastTask.rank - 1000 : 1000;
     }
 
     // Apply immediately to local state so the card jumps to its new position

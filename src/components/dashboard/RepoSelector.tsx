@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { useRepositories } from "@/hooks/useRepositories";
 import { useRepository } from "@/contexts/RepositoryContext";
 import { useInitializeHlavi } from "@/hooks/useInitializeHlavi";
 import { useBranches } from "@/hooks/useBranches";
+import { useHiddenRepos } from "@/hooks/useHiddenRepos";
 import { BranchSelector } from "./BranchSelector";
-import { Loader2, Sparkles } from "lucide-react";
+import { Loader2, Sparkles, Settings } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 function useCheckHlavi(owner: string, repo: string, branch?: string) {
@@ -30,6 +32,7 @@ function useCheckHlavi(owner: string, repo: string, branch?: string) {
 export function RepoSelector() {
   const { data, isLoading, error } = useRepositories();
   const { owner, repo, setRepository, clearRepository } = useRepository();
+  const { isHidden } = useHiddenRepos();
   const initializeHlavi = useInitializeHlavi();
   const [pendingSelection, setPendingSelection] = useState<{
     owner: string;
@@ -87,14 +90,16 @@ export function RepoSelector() {
     );
   }
 
-  const repositories = (data?.repositories || []).sort((a, b) => {
-    // First sort by organization (owner)
-    const ownerCompare = a.owner.login.localeCompare(b.owner.login);
-    if (ownerCompare !== 0) return ownerCompare;
+  const repositories = (data?.repositories || [])
+    .filter((r) => !isHidden(r.full_name))
+    .sort((a, b) => {
+      // First sort by organization (owner)
+      const ownerCompare = a.owner.login.localeCompare(b.owner.login);
+      if (ownerCompare !== 0) return ownerCompare;
 
-    // Then sort by repository name
-    return a.name.localeCompare(b.name);
-  });
+      // Then sort by repository name
+      return a.name.localeCompare(b.name);
+    });
 
   if (repositories.length === 0) {
     return (
@@ -231,6 +236,13 @@ export function RepoSelector() {
       {selectedRepo && hlaviCheck?.hasHlavi && (
         <BranchSelector />
       )}
+
+      <p className="text-xs text-gray-400 flex items-center gap-1">
+        <Settings className="w-3 h-3" />
+        <Link href="/settings" className="hover:text-gray-600 hover:underline transition-colors">
+          Add or remove repos displayed here in Settings
+        </Link>
+      </p>
     </div>
   );
 }

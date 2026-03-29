@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Calendar, CalendarCheck, Kanban, Menu, X, Plus } from "lucide-react";
+import { LayoutDashboard, Calendar, CalendarCheck, Kanban, Menu, X, Plus, Settings } from "lucide-react";
 import { useRepository } from "@/contexts/RepositoryContext";
 import { CreateTaskModal } from "@/components/tasks/CreateTaskModal";
 
@@ -69,6 +69,19 @@ export function Header() {
                   New Task
                 </button>
               )}
+
+              {/* Settings Icon (Desktop) */}
+              <Link
+                href="/settings"
+                className={`p-2 rounded-lg transition-colors ${
+                  pathname === "/settings"
+                    ? "bg-blue-50 text-blue-700"
+                    : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+                }`}
+                aria-label="Settings"
+              >
+                <Settings className="w-5 h-5" />
+              </Link>
             </div>
 
             {/* Mobile Menu Button */}
@@ -124,6 +137,20 @@ export function Header() {
                   New Task
                 </button>
               )}
+
+              {/* Settings (Mobile) */}
+              <Link
+                href="/settings"
+                onClick={closeMobileMenu}
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-colors ${
+                  pathname === "/settings"
+                    ? "bg-blue-50 text-blue-700"
+                    : "text-gray-700 hover:bg-gray-100"
+                }`}
+              >
+                <Settings className="w-5 h-5" />
+                Settings
+              </Link>
             </nav>
           </div>
         )}

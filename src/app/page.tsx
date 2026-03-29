@@ -91,7 +91,7 @@ export default function LandingPage() {
               </h3>
               <p className="text-gray-600">
                 Tasks stored as JSON in <code className="text-sm bg-gray-100 px-1 py-0.5 rounded">.hlavi/</code> directory.
-                No databases, no external storage. It's all in your repo.
+                No databases, no external storage. It&apos;s all in your repo.
               </p>
             </div>
 
@@ -166,7 +166,7 @@ export default function LandingPage() {
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">Agenda View</h3>
               <p className="text-gray-600">
-                Daily, weekly, and monthly views. See what's due today and plan ahead.
+                Daily, weekly, and monthly views. See what&apos;s due today and plan ahead.
               </p>
             </div>
           </div>
@@ -347,7 +347,7 @@ export default function LandingPage() {
             <ArrowRight className="w-5 h-5" />
           </Link>
           <p className="text-sm text-gray-500 mt-6">
-            No credit card • No setup fees • Cancel anytime (not that you can, it's free!)
+            No credit card • No setup fees • Cancel anytime (not that you can, it&apos;s free!)
           </p>
         </div>
       </section>

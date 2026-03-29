@@ -32,6 +32,7 @@ export interface Task {
   end_date?: string | null;
   parent?: string | null;
   blocks?: string[];
+  rank?: number;
 }
 
 // Board Configuration

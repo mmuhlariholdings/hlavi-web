@@ -59,7 +59,7 @@ export function BranchInitializer() {
             </h2>
             <p className="text-sm text-gray-600 mb-4">
               The <span className="font-medium">{branch}</span> branch in{" "}
-              <span className="font-medium">{owner}/{repo}</span> doesn't have a{" "}
+              <span className="font-medium">{owner}/{repo}</span> doesn&apos;t have a{" "}
               <code className="text-xs bg-white px-1.5 py-0.5 rounded border border-gray-200">
                 .hlavi
               </code>{" "}

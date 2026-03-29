@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { Task } from "@/lib/types";
 import { TaskStatusBadge } from "../tasks/TaskStatusBadge";
-import { CheckCircle2, Link2 } from "lucide-react";
+import { CheckCircle2, Link2, GripVertical } from "lucide-react";
 import { formatDate } from "@/lib/utils";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 interface TaskCardProps {
   task: Task;
@@ -40,18 +42,63 @@ export function TaskCard({ task }: TaskCardProps) {
             </span>
           </div>
           {task.blocks && task.blocks.length > 0 && (
-            <div className="flex items-center gap-1 text-orange-500" title={`Blocks: ${task.blocks.join(", ")}`}>
+            <div
+              className="flex items-center gap-1 text-orange-500"
+              title={`Blocks: ${task.blocks.join(", ")}`}
+            >
               <Link2 className="w-4 h-4" />
               <span className="text-xs">{task.blocks.length}</span>
             </div>
           )}
         </div>
         {task.end_date && (
-          <span className="text-xs">
-            Due: {formatDate(task.end_date)}
-          </span>
+          <span className="text-xs">Due: {formatDate(task.end_date)}</span>
         )}
       </div>
     </Link>
+  );
+}
+
+/**
+ * Drag-and-drop wrapper around TaskCard.
+ * The grip handle on the left triggers drag; the card itself remains clickable.
+ */
+export function SortableTaskCard({ task }: TaskCardProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: task.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`flex items-stretch gap-1 rounded-lg ${
+        isDragging ? "opacity-40" : ""
+      }`}
+    >
+      {/* Drag handle — only this area initiates drag, keeping the card link clickable */}
+      <div
+        {...attributes}
+        {...listeners}
+        className="flex items-center px-1 text-gray-300 hover:text-gray-500 cursor-grab active:cursor-grabbing touch-none flex-shrink-0"
+        aria-label="Drag to reorder"
+      >
+        <GripVertical className="w-4 h-4" />
+      </div>
+
+      <div className="flex-1 min-w-0">
+        <TaskCard task={task} />
+      </div>
+    </div>
   );
 }

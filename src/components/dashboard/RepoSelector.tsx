@@ -182,7 +182,7 @@ export function RepoSelector() {
                 Initialize Hlavi in <span className="text-blue-600">{pendingSelection.owner}/{pendingSelection.repo}</span>
               </p>
               <p className="text-sm text-gray-600 mb-3">
-                This repository doesn't have a <code className="text-xs bg-white px-1.5 py-0.5 rounded border border-gray-200">.hlavi</code> directory yet.
+                This repository doesn&apos;t have a <code className="text-xs bg-white px-1.5 py-0.5 rounded border border-gray-200">.hlavi</code> directory yet.
                 Initialize Hlavi to get started with git-based task management.
               </p>
 

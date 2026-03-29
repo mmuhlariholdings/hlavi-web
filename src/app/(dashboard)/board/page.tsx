@@ -23,7 +23,7 @@ export default function BoardPage() {
     branch
   );
 
-  const [sortOption, setSortOption] = useState<SortOption>("created-newest");
+  const [sortOption, setSortOption] = useState<SortOption>("rank");
 
   // Load sort preference from localStorage
   useEffect(() => {

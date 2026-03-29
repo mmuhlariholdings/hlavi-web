@@ -4,6 +4,7 @@ import { Task } from "@/lib/types";
 import { ArrowUpDown } from "lucide-react";
 
 export type SortOption =
+  | "rank"
   | "created-newest"
   | "created-oldest"
   | "updated-newest"
@@ -36,6 +37,7 @@ export function TaskSort({ value, onChange }: TaskSortProps) {
         onChange={(e) => onChange(e.target.value as SortOption)}
         className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
       >
+        <option value="rank">Board Order (Rank)</option>
         <option value="created-newest">Created (Newest)</option>
         <option value="created-oldest">Created (Oldest)</option>
         <option value="updated-newest">Updated (Newest)</option>
@@ -55,6 +57,12 @@ export function sortTasks(tasks: Task[], sortOption: SortOption): Task[] {
   const sorted = [...tasks];
 
   switch (sortOption) {
+    case "rank":
+      return sorted.sort((a, b) => {
+        const rankDiff = (b.rank ?? 0) - (a.rank ?? 0);
+        if (rankDiff !== 0) return rankDiff;
+        return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
+      });
     case "created-newest":
       return sorted.sort(
         (a, b) =>

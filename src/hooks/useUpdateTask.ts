@@ -102,13 +102,22 @@ export function useUpdateTask() {
       return { previousTask, previousTasks };
     },
     onSuccess: (data, variables) => {
-      // Invalidate and refetch to ensure consistency with server
-      queryClient.invalidateQueries({
-        queryKey: ["tasks", variables.owner, variables.repo, variables.branch],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["task", variables.owner, variables.repo, variables.taskId, variables.branch],
-      });
+      // Update cache directly from server response to avoid stale GitHub read-after-write
+      queryClient.setQueryData(
+        ["task", variables.owner, variables.repo, variables.taskId, variables.branch],
+        { task: data.task }
+      );
+      queryClient.setQueryData(
+        ["tasks", variables.owner, variables.repo, variables.branch],
+        (old: any) => {
+          if (!old?.tasks) return old;
+          return {
+            tasks: old.tasks.map((task: Task) =>
+              task.id === variables.taskId ? data.task : task
+            ),
+          };
+        }
+      );
 
       // Show success toast
       toast.success("Task updated successfully");

@@ -34,11 +34,18 @@ export function KanbanBoard({ tasks, boardConfig }: KanbanBoardProps) {
   const [showMoreRight, setShowMoreRight] = useState(false);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
 
+  // Local optimistic copy — updated immediately on drop for instant visual feedback.
+  // Synced back from the server whenever the tasks prop changes.
+  const [optimisticTasks, setOptimisticTasks] = useState<Task[]>(tasks);
+  useEffect(() => {
+    setOptimisticTasks(tasks);
+  }, [tasks]);
+
   const { owner, repo, branch } = useRepository();
   const updateTask = useUpdateTask();
 
-  // Mouse: 8px movement required to start drag (prevents accidental drags)
-  // Touch: 250ms hold + 5px tolerance before drag starts (lets scroll work naturally)
+  // Mouse: 8px movement required to start drag (prevents accidental drags on click)
+  // Touch: 250ms hold + 5px tolerance before drag starts (preserves scroll)
   const sensors = useSensors(
     useSensor(MouseSensor, {
       activationConstraint: { distance: 8 },
@@ -101,16 +108,14 @@ export function KanbanBoard({ tasks, boardConfig }: KanbanBoardProps) {
     });
   };
 
-  // Sort tasks by rank (desc), preserving incoming order for ties (secondary sort
-  // already applied by the board page's sortOption).
-  const sortedTasks = [...tasks].sort((a, b) => {
+  // Sort by rank desc; preserve incoming order for ties (secondary sort already applied)
+  const sortedTasks = [...optimisticTasks].sort((a, b) => {
     const rankDiff = (b.rank ?? 0) - (a.rank ?? 0);
-    if (rankDiff !== 0) return rankDiff;
-    return 0; // preserve incoming sort order for equal ranks
+    return rankDiff !== 0 ? rankDiff : 0;
   });
 
   const handleDragStart = (event: DragStartEvent) => {
-    const task = tasks.find((t) => t.id === event.active.id);
+    const task = optimisticTasks.find((t) => t.id === event.active.id);
     setActiveTask(task ?? null);
   };
 
@@ -120,7 +125,7 @@ export function KanbanBoard({ tasks, boardConfig }: KanbanBoardProps) {
     if (!over || !owner || !repo) return;
     if (active.id === over.id) return;
 
-    const draggedTask = tasks.find((t) => t.id === active.id);
+    const draggedTask = optimisticTasks.find((t) => t.id === active.id);
     if (!draggedTask) return;
 
     // Determine target status: over.id is either a column status or a task id
@@ -133,13 +138,13 @@ export function KanbanBoard({ tasks, boardConfig }: KanbanBoardProps) {
     if (isColumnTarget) {
       targetStatus = over.id as TaskStatus;
     } else {
-      const overTask = tasks.find((t) => t.id === over.id);
+      const overTask = optimisticTasks.find((t) => t.id === over.id);
       if (!overTask) return;
       targetStatus = overTask.status;
       overTaskId = overTask.id;
     }
 
-    // Get the sorted task list for the target column, excluding the dragged task
+    // Sorted tasks in the target column, excluding the dragged card
     const columnTasks = sortedTasks.filter(
       (t) => t.status === targetStatus && t.id !== draggedTask.id
     );
@@ -152,10 +157,10 @@ export function KanbanBoard({ tasks, boardConfig }: KanbanBoardProps) {
       const taskAbove = overIndex > 0 ? columnTasks[overIndex - 1] : null;
 
       if (!taskAbove) {
-        // Dropping at the top — leave plenty of room above for future drags
+        // Dropping at the top — leave room above for future drags
         newRank = (taskBelow.rank ?? 0) + 1000;
       } else {
-        // Dropping between two tasks — sit just above the task below
+        // Dropping between two tasks
         newRank = (taskBelow.rank ?? 0) + 1;
       }
     } else {
@@ -163,6 +168,21 @@ export function KanbanBoard({ tasks, boardConfig }: KanbanBoardProps) {
       const lastTask = columnTasks[columnTasks.length - 1];
       newRank = lastTask ? (lastTask.rank ?? 0) - 1 : 0;
     }
+
+    // Apply immediately to local state so the card jumps to its new position
+    // without waiting for the server round-trip
+    setOptimisticTasks((prev) =>
+      prev.map((t) =>
+        t.id === draggedTask.id
+          ? {
+              ...t,
+              rank: newRank,
+              status: targetStatus,
+              updated_at: new Date().toISOString(),
+            }
+          : t
+      )
+    );
 
     const updates: Partial<Task> = { rank: newRank };
     if (draggedTask.status !== targetStatus) {
@@ -209,7 +229,7 @@ export function KanbanBoard({ tasks, boardConfig }: KanbanBoardProps) {
         </div>
       </div>
 
-      {/* Drag overlay renders the card being dragged at pointer position */}
+      {/* Drag overlay — rendered at pointer position during drag */}
       <DragOverlay>
         {activeTask ? (
           <div className="rotate-2 opacity-90 shadow-2xl">

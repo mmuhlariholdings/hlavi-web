@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Task } from "@/lib/types";
 import { TaskStatusBadge } from "../tasks/TaskStatusBadge";
-import { CheckCircle2, Link2, GripVertical } from "lucide-react";
+import { CheckCircle2, Link2 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -61,7 +61,8 @@ export function TaskCard({ task }: TaskCardProps) {
 
 /**
  * Drag-and-drop wrapper around TaskCard.
- * The grip handle on the left triggers drag; the card itself remains clickable.
+ * Listeners cover the whole card; the distance/delay activation constraints
+ * ensure taps still navigate and touch scroll still works.
  */
 export function SortableTaskCard({ task }: TaskCardProps) {
   const {
@@ -82,23 +83,13 @@ export function SortableTaskCard({ task }: TaskCardProps) {
     <div
       ref={setNodeRef}
       style={style}
-      className={`flex items-stretch gap-1 rounded-lg ${
+      className={`cursor-grab active:cursor-grabbing select-none ${
         isDragging ? "opacity-40" : ""
       }`}
+      {...attributes}
+      {...listeners}
     >
-      {/* Drag handle — only this area initiates drag, keeping the card link clickable */}
-      <div
-        {...attributes}
-        {...listeners}
-        className="flex items-center px-1 text-gray-300 hover:text-gray-500 cursor-grab active:cursor-grabbing touch-none flex-shrink-0"
-        aria-label="Drag to reorder"
-      >
-        <GripVertical className="w-4 h-4" />
-      </div>
-
-      <div className="flex-1 min-w-0">
-        <TaskCard task={task} />
-      </div>
+      <TaskCard task={task} />
     </div>
   );
 }

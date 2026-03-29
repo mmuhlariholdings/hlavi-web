@@ -109,12 +109,16 @@ export function KanbanBoard({ tasks, boardConfig, isDragEnabled = false }: Kanba
     });
   };
 
-  // Sort by rank desc; most recently updated breaks ties so unranked tasks have a stable order
-  const sortedTasks = [...optimisticTasks].sort((a, b) => {
-    const rankDiff = (b.rank ?? 0) - (a.rank ?? 0);
-    if (rankDiff !== 0) return rankDiff;
-    return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
-  });
+  // When drag is enabled (rank sort), re-sort by rank so the board order is always
+  // correct even after optimistic updates. Otherwise, respect the order passed in
+  // from the page (which already applied the user's chosen sort option).
+  const sortedTasks = isDragEnabled
+    ? [...optimisticTasks].sort((a, b) => {
+        const rankDiff = (b.rank ?? 0) - (a.rank ?? 0);
+        if (rankDiff !== 0) return rankDiff;
+        return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
+      })
+    : optimisticTasks;
 
   const handleDragStart = (event: DragStartEvent) => {
     const task = optimisticTasks.find((t) => t.id === event.active.id);

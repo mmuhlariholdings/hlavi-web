@@ -48,7 +48,7 @@ body {
 
   /* Markdown rendered content */
   .prose-content {
-    @apply text-sm text-gray-700 leading-relaxed;
+    @apply text-base text-gray-700 leading-relaxed;
   }
   .prose-content h1,
   .prose-content h2,

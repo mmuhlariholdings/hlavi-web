@@ -153,7 +153,7 @@ export function RepoSelector() {
         Select Repository
       </label>
       <select
-        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+        className="select-styled w-full py-2"
         value={selectedRepo?.full_name || ""}
         onChange={(e) => handleRepoChange(e.target.value)}
         disabled={isCheckingHlavi}
@@ -196,7 +196,7 @@ export function RepoSelector() {
                     value={initBranch}
                     onChange={(e) => setInitBranch(e.target.value)}
                     disabled={initializeHlavi.isPending}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-sm"
+                    className="select-styled w-full py-2"
                   >
                     {branchesData.branches.map((branch) => (
                       <option key={branch.name} value={branch.name}>

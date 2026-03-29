@@ -57,7 +57,7 @@ export function BranchSelector() {
           id="branch-selector"
           value={currentBranch}
           onChange={(e) => setBranch(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-sm"
+          className="select-styled w-full pl-10 py-2"
         >
           {branches.map((b) => (
             <option key={b.name} value={b.name}>

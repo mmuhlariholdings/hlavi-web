@@ -51,7 +51,7 @@ export function DateSelector({ onDateJump }: DateSelectorProps) {
             const value = e.target.value as QuickSelectOption;
             handleQuickSelect(value);
           }}
-          className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-sm font-medium text-gray-700"
+          className="select-styled py-2 font-medium"
         >
           <option value="today">Today</option>
           <option value="tomorrow">Tomorrow</option>

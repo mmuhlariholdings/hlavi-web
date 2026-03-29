@@ -287,7 +287,7 @@ export function TimelineView({ tasks }: TimelineViewProps) {
             id="timeline-zoom"
             value={activeZoom}
             onChange={(e) => handleZoom(e.target.value)}
-            className="px-3 py-1.5 text-xs font-medium border border-gray-300 rounded-md bg-white text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="select-styled text-xs font-medium"
           >
             <option value="day">Day</option>
             <option value="week">Week</option>

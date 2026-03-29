@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { Task, TaskStatus } from "@/lib/types";
 import { TaskStatusBadge } from "./TaskStatusBadge";
 import { AcceptanceCriteriaList } from "./AcceptanceCriteriaList";
@@ -34,6 +36,7 @@ export function TaskDetail({ task }: TaskDetailProps) {
 
   const [isEditing, setIsEditing] = useState(false);
   const [newCriteriaDescription, setNewCriteriaDescription] = useState("");
+  const descriptionRef = useRef<HTMLTextAreaElement>(null);
 
   const [editedTitle, setEditedTitle] = useState(task.title);
   const [editedDescription, setEditedDescription] = useState(task.description || "");
@@ -47,6 +50,14 @@ export function TaskDetail({ task }: TaskDetailProps) {
   const [editedEffort, setEditedEffort] = useState(
     task.effort != null ? String(task.effort) : ""
   );
+
+  useEffect(() => {
+    const el = descriptionRef.current;
+    if (el) {
+      el.style.height = "auto";
+      el.style.height = `${el.scrollHeight}px`;
+    }
+  }, [editedDescription, isEditing]);
 
   const allOtherTasks = (tasksData?.tasks || [])
     .filter((t) => t.id !== task.id)
@@ -154,7 +165,7 @@ export function TaskDetail({ task }: TaskDetailProps) {
               <select
                 value={editedStatus}
                 onChange={(e) => setEditedStatus(e.target.value as TaskStatus)}
-                className="px-3 py-1 border border-gray-300 rounded-lg text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="select-styled font-medium"
               >
                 {STATUS_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -184,15 +195,20 @@ export function TaskDetail({ task }: TaskDetailProps) {
         <h2 className="text-base md:text-lg font-semibold mb-2">Description</h2>
         {isEditing ? (
           <textarea
+            ref={descriptionRef}
             value={editedDescription}
             onChange={(e) => setEditedDescription(e.target.value)}
-            className="w-full min-h-[100px] p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm md:text-base resize-y"
-            placeholder="Add a description..."
+            className="w-full min-h-[100px] p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm md:text-base resize-none overflow-hidden"
+            placeholder="Add a description... (Markdown supported)"
           />
+        ) : task.description ? (
+          <div className="prose-content">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {task.description}
+            </ReactMarkdown>
+          </div>
         ) : (
-          <p className="text-sm md:text-base text-gray-700 whitespace-pre-wrap break-words">
-            {task.description || <span className="text-gray-400 italic">No description</span>}
-          </p>
+          <span className="text-sm text-gray-400 italic">No description</span>
         )}
       </div>
 
@@ -308,7 +324,7 @@ export function TaskDetail({ task }: TaskDetailProps) {
               value=""
               onChange={(e) => { if (e.target.value) saveParent(e.target.value); }}
               disabled={updateTask.isPending}
-              className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-400 focus:border-transparent text-sm text-gray-500 bg-white"
+              className="select-styled w-full py-2 focus:ring-purple-400 focus:border-purple-400"
             >
               <option value="">Set parent task...</option>
               {allOtherTasks
@@ -360,7 +376,7 @@ export function TaskDetail({ task }: TaskDetailProps) {
             value=""
             onChange={(e) => { if (e.target.value) addBlock(e.target.value); }}
             disabled={updateTask.isPending}
-            className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent text-sm text-gray-500 bg-white"
+            className="select-styled w-full py-2 focus:ring-orange-400 focus:border-orange-400"
           >
             <option value="">Add blocked task...</option>
             {allOtherTasks

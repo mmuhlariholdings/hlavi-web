@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Task } from "@/lib/types";
 import { TaskStatusBadge } from "../tasks/TaskStatusBadge";
 import { CheckCircle2, Link2 } from "lucide-react";
-import { formatDate } from "@/lib/utils";
+import { formatDate, stripMarkdown } from "@/lib/utils";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
@@ -30,7 +30,7 @@ export function TaskCard({ task }: TaskCardProps) {
       </h4>
       {task.description && (
         <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-          {task.description}
+          {stripMarkdown(task.description)}
         </p>
       )}
       <div className="flex items-center justify-between text-sm text-gray-500">

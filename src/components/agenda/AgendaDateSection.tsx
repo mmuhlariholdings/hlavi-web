@@ -4,6 +4,7 @@ import { format, isToday, isTomorrow, isYesterday } from "date-fns";
 import { Calendar } from "lucide-react";
 import Link from "next/link";
 import { Task } from "@/lib/types";
+import { stripMarkdown } from "@/lib/utils";
 import { forwardRef } from "react";
 
 interface AgendaDateSectionProps {
@@ -140,7 +141,7 @@ export const AgendaDateSection = forwardRef<HTMLDivElement, AgendaDateSectionPro
 
                 {/* Task Description */}
                 {task.description && (
-                  <p className="text-sm text-gray-600 mb-2 line-clamp-1">{task.description}</p>
+                  <p className="text-sm text-gray-600 mb-2 line-clamp-1">{stripMarkdown(task.description)}</p>
                 )}
 
                 {/* Task Footer */}

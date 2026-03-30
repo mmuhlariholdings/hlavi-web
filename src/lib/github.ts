@@ -1,6 +1,14 @@
 import { Octokit } from "@octokit/rest";
 import { Task, Board, BoardConfig, GitHubContent, Repository, TaskComment } from "./types";
 
+/** Normalize legacy status values written by older agent versions. */
+function normalizeTask(task: Task): Task {
+  if ((task.status as string) === "in_progress") {
+    return { ...task, status: "inprogress" };
+  }
+  return task;
+}
+
 const AGENT_WORKFLOW_PATH = ".github/workflows/hlavi-agent.yml";
 
 const AGENT_WORKFLOW_CONTENT = `name: Hlavi Agent
@@ -150,7 +158,7 @@ export class GitHubService {
 
     if ("content" in data && data.content) {
       const content = Buffer.from(data.content, "base64").toString("utf-8");
-      return JSON.parse(content);
+      return normalizeTask(JSON.parse(content));
     }
 
     throw new Error("Failed to fetch task");
@@ -164,7 +172,7 @@ export class GitHubService {
         if (!file.download_url) throw new Error(`No download URL for ${file.name}`);
         const res = await fetch(file.download_url);
         if (!res.ok) throw new Error(`Failed to fetch ${file.name}: ${res.status}`);
-        return res.json() as Promise<Task>;
+        return res.json().then(normalizeTask) as Promise<Task>;
       })
     );
 

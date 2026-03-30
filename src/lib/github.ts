@@ -53,11 +53,12 @@ jobs:
       - name: Run Hlavi Agent
         uses: mmuhlariholdings/hlavi-agent-action@v1
         with:
-          # Add your chosen provider's API key as a repository secret.
-          # Only one key is needed — the provider is auto-detected from the model name.
+          # Add secrets for whichever providers you want to use.
+          # The action auto-detects which key to use from the model name.
+          # If the required key is missing the task will be skipped with an explanatory comment.
           anthropic_api_key: \${{ secrets.ANTHROPIC_API_KEY }}
-          # openai_api_key: \${{ secrets.OPENAI_API_KEY }}
-          # google_api_key: \${{ secrets.GOOGLE_API_KEY }}
+          openai_api_key: \${{ secrets.OPENAI_API_KEY }}
+          google_api_key: \${{ secrets.GOOGLE_API_KEY }}
 
           model: \${{ inputs.model || 'claude-opus-4-6' }}
           dry_run: \${{ inputs.dry_run || 'false' }}

@@ -298,7 +298,7 @@ export function TaskDetail({ task }: TaskDetailProps) {
                 <p className="text-sm font-medium text-gray-900">
                   {task.autonomous ? (
                     <span className="inline-flex items-center gap-1.5 text-violet-700">
-                      <Bot className="w-3.5 h-3.5" />
+                      <Bot className="w-5 h-5" />
                       Enabled
                     </span>
                   ) : (

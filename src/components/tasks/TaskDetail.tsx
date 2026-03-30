@@ -219,8 +219,8 @@ export function TaskDetail({ task }: TaskDetailProps) {
       <div>
         <h2 className="text-base md:text-lg font-semibold mb-3">Details</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div className="flex items-start gap-2 p-3 bg-gray-50 rounded-lg">
-            <Calendar className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
+          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+            <Calendar className="w-8 h-8 text-gray-400 flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-xs text-gray-600 mb-0.5">Start Date</p>
               {isEditing ? (
@@ -238,8 +238,8 @@ export function TaskDetail({ task }: TaskDetailProps) {
             </div>
           </div>
 
-          <div className="flex items-start gap-2 p-3 bg-gray-50 rounded-lg">
-            <Calendar className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
+          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+            <Calendar className="w-8 h-8 text-gray-400 flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-xs text-gray-600 mb-0.5">End Date</p>
               {isEditing ? (
@@ -257,8 +257,8 @@ export function TaskDetail({ task }: TaskDetailProps) {
             </div>
           </div>
 
-          <div className="flex items-start gap-2 p-3 bg-gray-50 rounded-lg">
-            <Zap className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
+          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+            <Zap className="w-8 h-8 text-gray-400 flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-xs text-gray-600 mb-0.5">Effort</p>
               {isEditing ? (
@@ -278,8 +278,8 @@ export function TaskDetail({ task }: TaskDetailProps) {
             </div>
           </div>
 
-          <div className="flex items-start gap-2 p-3 bg-gray-50 rounded-lg md:col-span-2">
-            <Bot className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
+          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg md:col-span-2">
+            <Bot className="w-8 h-8 text-gray-400 flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-xs text-gray-600 mb-0.5">Autonomous Mode</p>
               {isEditing ? (

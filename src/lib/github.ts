@@ -14,9 +14,9 @@ const AGENT_WORKFLOW_PATH = ".github/workflows/hlavi-agent.yml";
 const AGENT_WORKFLOW_CONTENT = `name: Hlavi Agent
 
 on:
-  # Run every 30 minutes
+  # Run once a day at 02:00 UTC
   schedule:
-    - cron: '*/30 * * * *'
+    - cron: '0 2 * * *'
   # Allow manual trigger with model override from the Actions tab
   workflow_dispatch:
     inputs:

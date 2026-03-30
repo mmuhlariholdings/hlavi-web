@@ -7,7 +7,7 @@ import { Task, TaskStatus } from "@/lib/types";
 import { TaskStatusBadge } from "./TaskStatusBadge";
 import { AcceptanceCriteriaList } from "./AcceptanceCriteriaList";
 import { formatDate } from "@/lib/utils";
-import { Calendar, Clock, Edit2, X, Save, Plus, Link2, GitBranch, Zap } from "lucide-react";
+import { Calendar, Clock, Edit2, X, Save, Plus, Link2, GitBranch, Zap, Bot } from "lucide-react";
 import { useUpdateTask } from "@/hooks/useUpdateTask";
 import { useAddAcceptanceCriteria } from "@/hooks/useAcceptanceCriteria";
 import { useRepository } from "@/contexts/RepositoryContext";
@@ -50,6 +50,7 @@ export function TaskDetail({ task }: TaskDetailProps) {
   const [editedEffort, setEditedEffort] = useState(
     task.effort != null ? String(task.effort) : ""
   );
+  const [editedAutonomous, setEditedAutonomous] = useState(task.autonomous);
 
   useEffect(() => {
     const el = descriptionRef.current;
@@ -105,6 +106,7 @@ export function TaskDetail({ task }: TaskDetailProps) {
           start_date: editedStartDate ? new Date(editedStartDate).toISOString() : null,
           end_date: editedEndDate ? new Date(editedEndDate).toISOString() : null,
           effort: effortNum ?? undefined,
+          autonomous: editedAutonomous,
         },
       });
       setIsEditing(false);
@@ -120,6 +122,7 @@ export function TaskDetail({ task }: TaskDetailProps) {
     setEditedStartDate(task.start_date ? format(new Date(task.start_date), "yyyy-MM-dd") : "");
     setEditedEndDate(task.end_date ? format(new Date(task.end_date), "yyyy-MM-dd") : "");
     setEditedEffort(task.effort != null ? String(task.effort) : "");
+    setEditedAutonomous(task.autonomous);
     setIsEditing(false);
   };
 
@@ -270,6 +273,37 @@ export function TaskDetail({ task }: TaskDetailProps) {
               ) : (
                 <p className="text-sm font-medium text-gray-900">
                   {task.effort != null ? task.effort : <span className="text-gray-400">Not estimated</span>}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-start gap-2 p-3 bg-gray-50 rounded-lg md:col-span-2">
+            <Bot className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-gray-600 mb-0.5">Autonomous Mode</p>
+              {isEditing ? (
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={editedAutonomous}
+                    onChange={(e) => setEditedAutonomous(e.target.checked)}
+                    className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-sm text-gray-700">
+                    Allow an agent to pick up this task when it reaches Open
+                  </span>
+                </label>
+              ) : (
+                <p className="text-sm font-medium text-gray-900">
+                  {task.autonomous ? (
+                    <span className="inline-flex items-center gap-1.5 text-violet-700">
+                      <Bot className="w-3.5 h-3.5" />
+                      Enabled
+                    </span>
+                  ) : (
+                    <span className="text-gray-400">Disabled</span>
+                  )}
                 </p>
               )}
             </div>

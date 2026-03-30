@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Task } from "@/lib/types";
 import { TaskStatusBadge } from "../tasks/TaskStatusBadge";
-import { CheckCircle2, Link2, Zap } from "lucide-react";
+import { CheckCircle2, Link2, Zap, Bot } from "lucide-react";
 import { formatDate, stripMarkdown } from "@/lib/utils";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -23,7 +23,12 @@ export function TaskCard({ task }: TaskCardProps) {
     >
       <div className="flex items-start justify-between mb-2">
         <span className="text-sm font-semibold text-blue-600">{task.id}</span>
-        <TaskStatusBadge status={task.status} />
+        <div className="flex items-center gap-1.5">
+          {task.autonomous && (
+            <Bot className="w-3.5 h-3.5 text-violet-500" title="Autonomous mode enabled" />
+          )}
+          <TaskStatusBadge status={task.status} />
+        </div>
       </div>
       <h4 className="font-medium text-gray-900 mb-2 line-clamp-2">
         {task.title}

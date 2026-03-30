@@ -27,6 +27,7 @@ export interface Task {
   created_at: string;
   updated_at: string;
   agent_assigned: boolean;
+  autonomous: boolean;
   rejection_reason: string | null;
   start_date?: string | null;
   end_date?: string | null;

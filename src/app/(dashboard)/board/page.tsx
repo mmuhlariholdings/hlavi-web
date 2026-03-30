@@ -105,7 +105,7 @@ export default function BoardPage() {
         <KanbanBoard
           tasks={sortedTasks}
           boardConfig={boardConfig}
-          isDragEnabled={sortOption === "rank"}
+          isRankSort={sortOption === "rank"}
         />
       )}
     </div>

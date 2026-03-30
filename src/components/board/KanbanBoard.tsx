@@ -23,10 +23,10 @@ import { useRepository } from "@/contexts/RepositoryContext";
 interface KanbanBoardProps {
   tasks: Task[];
   boardConfig: BoardConfig;
-  isDragEnabled?: boolean;
+  isRankSort?: boolean;
 }
 
-export function KanbanBoard({ tasks, boardConfig, isDragEnabled = false }: KanbanBoardProps) {
+export function KanbanBoard({ tasks, boardConfig, isRankSort = false }: KanbanBoardProps) {
   const [collapsedColumns, setCollapsedColumns] = useState<Set<string>>(
     new Set()
   );
@@ -112,7 +112,7 @@ export function KanbanBoard({ tasks, boardConfig, isDragEnabled = false }: Kanba
   // When drag is enabled (rank sort), re-sort by rank so the board order is always
   // correct even after optimistic updates. Otherwise, respect the order passed in
   // from the page (which already applied the user's chosen sort option).
-  const sortedTasks = isDragEnabled
+  const sortedTasks = isRankSort
     ? [...optimisticTasks].sort((a, b) => {
         const rankDiff = (b.rank ?? 0) - (a.rank ?? 0);
         if (rankDiff !== 0) return rankDiff;
@@ -150,56 +150,64 @@ export function KanbanBoard({ tasks, boardConfig, isDragEnabled = false }: Kanba
       overTaskId = overTask.id;
     }
 
-    // Sorted tasks in the target column, excluding the dragged card
-    const columnTasks = sortedTasks.filter(
-      (t) => t.status === targetStatus && t.id !== draggedTask.id
-    );
+    // In non-rank sort modes, only allow cross-column drops (status changes).
+    // Within-column reordering is only meaningful when sorted by rank.
+    if (!isRankSort && draggedTask.status === targetStatus) return;
 
-    // Give every task in the column an effective rank based on its visual position.
-    // Tasks with rank=0 (never explicitly ranked) get a position-based rank so
-    // insertion math always has room to place a card between any two neighbours.
-    const effectiveTasks = columnTasks.map((t, i) => ({
-      ...t,
-      rank: (t.rank ?? 0) !== 0 ? t.rank! : (columnTasks.length - i) * 1000,
-    }));
+    const updates: Partial<Task> = {};
 
-    let newRank: number;
+    if (isRankSort) {
+      // Sorted tasks in the target column, excluding the dragged card
+      const columnTasks = sortedTasks.filter(
+        (t) => t.status === targetStatus && t.id !== draggedTask.id
+      );
 
-    if (overTaskId) {
-      const overIndex = effectiveTasks.findIndex((t) => t.id === overTaskId);
-      const below = effectiveTasks[overIndex];
-      const above = overIndex > 0 ? effectiveTasks[overIndex - 1] : null;
+      // Give every task in the column an effective rank based on its visual position.
+      // Tasks with rank=0 (never explicitly ranked) get a position-based rank so
+      // insertion math always has room to place a card between any two neighbours.
+      const effectiveTasks = columnTasks.map((t, i) => ({
+        ...t,
+        rank: (t.rank ?? 0) !== 0 ? t.rank! : (columnTasks.length - i) * 1000,
+      }));
 
-      if (!above) {
-        // Dropping at the top — leave room above for future drags
-        newRank = below.rank + 1000;
+      let newRank: number;
+
+      if (overTaskId) {
+        const overIndex = effectiveTasks.findIndex((t) => t.id === overTaskId);
+        const below = effectiveTasks[overIndex];
+        const above = overIndex > 0 ? effectiveTasks[overIndex - 1] : null;
+
+        if (!above) {
+          newRank = below.rank + 1000;
+        } else {
+          const mid = Math.floor((above.rank + below.rank) / 2);
+          newRank = mid !== below.rank ? mid : below.rank + 1;
+        }
       } else {
-        // Midpoint between the two neighbours; fall back to below+1 if no gap
-        const mid = Math.floor((above.rank + below.rank) / 2);
-        newRank = mid !== below.rank ? mid : below.rank + 1;
+        const lastTask = effectiveTasks[effectiveTasks.length - 1];
+        newRank = lastTask ? lastTask.rank - 1000 : 1000;
       }
+
+      updates.rank = newRank;
+
+      setOptimisticTasks((prev) =>
+        prev.map((t) =>
+          t.id === draggedTask.id
+            ? { ...t, rank: newRank, status: targetStatus, updated_at: new Date().toISOString() }
+            : t
+        )
+      );
     } else {
-      // Dropped on the column itself (empty column or below all tasks)
-      const lastTask = effectiveTasks[effectiveTasks.length - 1];
-      newRank = lastTask ? lastTask.rank - 1000 : 1000;
+      // Non-rank sort: optimistically move card to the new column
+      setOptimisticTasks((prev) =>
+        prev.map((t) =>
+          t.id === draggedTask.id
+            ? { ...t, status: targetStatus, updated_at: new Date().toISOString() }
+            : t
+        )
+      );
     }
 
-    // Apply immediately to local state so the card jumps to its new position
-    // without waiting for the server round-trip
-    setOptimisticTasks((prev) =>
-      prev.map((t) =>
-        t.id === draggedTask.id
-          ? {
-              ...t,
-              rank: newRank,
-              status: targetStatus,
-              updated_at: new Date().toISOString(),
-            }
-          : t
-      )
-    );
-
-    const updates: Partial<Task> = { rank: newRank };
     if (draggedTask.status !== targetStatus) {
       updates.status = targetStatus;
     }
@@ -238,7 +246,7 @@ export function KanbanBoard({ tasks, boardConfig, isDragEnabled = false }: Kanba
                 tasks={columnTasks}
                 isCollapsed={collapsedColumns.has(column.status)}
                 onToggleCollapse={() => toggleColumn(column.status)}
-                isDragEnabled={isDragEnabled}
+                isDragEnabled={true}
               />
             );
           })}

@@ -1,15 +1,17 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Task, TaskStatus } from "@/lib/types";
 import { TaskStatusBadge } from "./TaskStatusBadge";
 import { AcceptanceCriteriaList } from "./AcceptanceCriteriaList";
 import { formatDate } from "@/lib/utils";
-import { Calendar, Clock, Edit2, X, Save, Plus, Link2, GitBranch, Zap, Bot } from "lucide-react";
+import { Calendar, Clock, Edit2, X, Save, Plus, Link2, GitBranch, Zap, Bot, MessageSquare, User, Send, Cpu } from "lucide-react";
 import { useUpdateTask } from "@/hooks/useUpdateTask";
 import { useAddAcceptanceCriteria } from "@/hooks/useAcceptanceCriteria";
+import { useAddComment } from "@/hooks/useAddComment";
 import { useRepository } from "@/contexts/RepositoryContext";
 import { useTasks } from "@/hooks/useTasks";
 import { format } from "date-fns";
@@ -28,14 +30,30 @@ const STATUS_OPTIONS: { value: TaskStatus; label: string }[] = [
   { value: "closed", label: "Closed" },
 ];
 
+const MODEL_OPTIONS = [
+  { value: "", label: "Board default" },
+  { value: "claude-opus-4-6", label: "Claude Opus 4.6" },
+  { value: "claude-sonnet-4-6", label: "Claude Sonnet 4.6" },
+  { value: "claude-haiku-4-5", label: "Claude Haiku 4.5" },
+  { value: "gpt-4o", label: "GPT-4o" },
+  { value: "gpt-4o-mini", label: "GPT-4o mini" },
+  { value: "o3", label: "o3" },
+  { value: "o4-mini", label: "o4-mini" },
+  { value: "gemini-2.0-flash", label: "Gemini 2.0 Flash" },
+  { value: "gemini-1.5-pro", label: "Gemini 1.5 Pro" },
+];
+
 export function TaskDetail({ task }: TaskDetailProps) {
   const { owner, repo, branch } = useRepository();
+  const { data: session } = useSession();
   const updateTask = useUpdateTask();
   const addCriteria = useAddAcceptanceCriteria();
+  const addComment = useAddComment();
   const { data: tasksData } = useTasks(owner || "", repo || "", branch);
 
   const [isEditing, setIsEditing] = useState(false);
   const [newCriteriaDescription, setNewCriteriaDescription] = useState("");
+  const [newCommentBody, setNewCommentBody] = useState("");
   const descriptionRef = useRef<HTMLTextAreaElement>(null);
 
   const [editedTitle, setEditedTitle] = useState(task.title);
@@ -51,6 +69,7 @@ export function TaskDetail({ task }: TaskDetailProps) {
     task.effort != null ? String(task.effort) : ""
   );
   const [editedAutonomous, setEditedAutonomous] = useState(task.autonomous);
+  const [editedModel, setEditedModel] = useState(task.model ?? "");
 
   useEffect(() => {
     const el = descriptionRef.current;
@@ -107,6 +126,7 @@ export function TaskDetail({ task }: TaskDetailProps) {
           end_date: editedEndDate ? new Date(editedEndDate).toISOString() : null,
           effort: effortNum ?? undefined,
           autonomous: editedAutonomous,
+          model: editedModel || null,
         },
       });
       setIsEditing(false);
@@ -123,6 +143,7 @@ export function TaskDetail({ task }: TaskDetailProps) {
     setEditedEndDate(task.end_date ? format(new Date(task.end_date), "yyyy-MM-dd") : "");
     setEditedEffort(task.effort != null ? String(task.effort) : "");
     setEditedAutonomous(task.autonomous);
+    setEditedModel(task.model ?? "");
     setIsEditing(false);
   };
 
@@ -143,8 +164,26 @@ export function TaskDetail({ task }: TaskDetailProps) {
     }
   };
 
+  const handleAddComment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!owner || !repo || !newCommentBody.trim()) return;
+    try {
+      await addComment.mutateAsync({
+        owner,
+        repo,
+        branch,
+        taskId: task.id,
+        body: newCommentBody.trim(),
+      });
+      setNewCommentBody("");
+    } catch (error) {
+      console.error("Failed to add comment:", error);
+    }
+  };
+
   const currentBlocks = task.blocks || [];
   const blockedByParent = task.parent ? [task.parent] : [];
+  const comments = task.comments ?? [];
 
   return (
     <div className="space-y-6">
@@ -278,7 +317,7 @@ export function TaskDetail({ task }: TaskDetailProps) {
             </div>
           </div>
 
-          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg md:col-span-2">
+          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
             <Bot className="w-6 h-6 text-gray-400 flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-xs text-gray-600 mb-0.5">Autonomous Mode</p>
@@ -309,6 +348,37 @@ export function TaskDetail({ task }: TaskDetailProps) {
             </div>
           </div>
 
+          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg md:col-span-2">
+            <Cpu className="w-6 h-6 text-gray-400 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-gray-600 mb-0.5">Agent Model</p>
+              {isEditing ? (
+                <select
+                  value={editedModel}
+                  onChange={(e) => setEditedModel(e.target.value)}
+                  className="select-styled text-sm"
+                >
+                  {MODEL_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <p className="text-sm font-medium text-gray-900">
+                  {task.model ? (
+                    <span className="inline-flex items-center gap-1.5 text-violet-700">
+                      <Cpu className="w-4 h-4" />
+                      {task.model}
+                    </span>
+                  ) : (
+                    <span className="text-gray-400">Board default</span>
+                  )}
+                </p>
+              )}
+            </div>
+          </div>
+
           <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
             <Clock className="w-6 h-6 text-gray-400 flex-shrink-0" />
             <div className="flex-1 min-w-0">
@@ -327,7 +397,7 @@ export function TaskDetail({ task }: TaskDetailProps) {
         </div>
       </div>
 
-      {/* Parent Task — always-on inline */}
+      {/* Parent Task */}
       <div>
         <h2 className="text-base md:text-lg font-semibold mb-3 flex items-center gap-2">
           <GitBranch className="w-4 h-4 text-purple-500" />
@@ -373,7 +443,7 @@ export function TaskDetail({ task }: TaskDetailProps) {
         </div>
       </div>
 
-      {/* Blocks — always-on inline */}
+      {/* Blocks */}
       <div>
         <h2 className="text-base md:text-lg font-semibold mb-3 flex items-center gap-2">
           <Link2 className="w-4 h-4 text-orange-500" />
@@ -468,6 +538,86 @@ export function TaskDetail({ task }: TaskDetailProps) {
           <p className="text-xs md:text-sm text-red-800 break-words">{task.rejection_reason}</p>
         </div>
       )}
+
+      {/* Comments */}
+      <div>
+        <h2 className="text-base md:text-lg font-semibold mb-3 flex items-center gap-2">
+          <MessageSquare className="w-4 h-4 text-gray-500" />
+          Comments
+          {comments.length > 0 && (
+            <span className="text-sm font-normal text-gray-500">({comments.length})</span>
+          )}
+        </h2>
+
+        {comments.length > 0 ? (
+          <div className="space-y-4 mb-4">
+            {comments.map((comment) => (
+              <div key={comment.id} className="flex gap-3">
+                <div className="flex-shrink-0 mt-0.5">
+                  {comment.author_type === "agent" ? (
+                    <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center">
+                      <Bot className="w-4 h-4 text-violet-600" />
+                    </div>
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                      <User className="w-4 h-4 text-blue-600" />
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0 bg-gray-50 rounded-lg p-3">
+                  <div className="flex flex-wrap items-center gap-2 mb-2">
+                    <span className="text-sm font-semibold text-gray-900">@{comment.author}</span>
+                    {comment.author_type === "agent" && comment.model && (
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-violet-50 border border-violet-200 rounded text-xs text-violet-700">
+                        <Cpu className="w-3 h-3" />
+                        {comment.model}
+                      </span>
+                    )}
+                    <span className="text-xs text-gray-400">{formatDate(comment.created_at)}</span>
+                  </div>
+                  <div className="prose-content text-sm">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{comment.body}</ReactMarkdown>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-gray-400 italic mb-4">No comments yet.</p>
+        )}
+
+        {session && (
+          <form onSubmit={handleAddComment}>
+            <div className="flex gap-3">
+              <div className="flex-shrink-0 mt-1">
+                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                  <User className="w-4 h-4 text-blue-600" />
+                </div>
+              </div>
+              <div className="flex-1">
+                <textarea
+                  value={newCommentBody}
+                  onChange={(e) => setNewCommentBody(e.target.value)}
+                  placeholder="Leave a comment... (Markdown supported)"
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none"
+                  disabled={addComment.isPending}
+                />
+                <div className="flex justify-end mt-2">
+                  <button
+                    type="submit"
+                    disabled={addComment.isPending || !newCommentBody.trim()}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2 text-sm font-medium"
+                  >
+                    <Send className="w-4 h-4" />
+                    {addComment.isPending ? "Posting..." : "Comment"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </form>
+        )}
+      </div>
 
       {/* Form actions — only shown in edit mode */}
       {isEditing && (

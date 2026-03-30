@@ -1,3 +1,13 @@
+// Comment on a task, posted by a user or an AI agent
+export interface TaskComment {
+  id: string;
+  author: string;      // GitHub username
+  author_type: 'user' | 'agent';
+  body: string;
+  created_at: string;
+  model?: string;      // Only set for agent comments
+}
+
 // Task Status enum matching Rust implementation
 export type TaskStatus =
   | 'new'
@@ -35,6 +45,10 @@ export interface Task {
   blocks?: string[];
   rank?: number;
   effort?: number | null;
+  /** AI model override for this task. Falls back to board config model, then workflow default. */
+  model?: string | null;
+  /** Comments from users and agents */
+  comments?: TaskComment[];
 }
 
 // Board Configuration
@@ -47,6 +61,8 @@ export interface BoardColumn {
 
 export interface BoardConfig {
   name: string;
+  /** Default AI model for autonomous tasks on this board. Overridden per-task via Task.model. */
+  model?: string | null;
   columns: BoardColumn[];
 }
 

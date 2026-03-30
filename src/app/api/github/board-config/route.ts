@@ -2,6 +2,30 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { GitHubService } from "@/lib/github";
 
+export async function PATCH(request: NextRequest) {
+  const session = await auth();
+
+  if (!session?.accessToken) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const { owner, repo, branch, updates } = await request.json();
+
+    if (!owner || !repo) {
+      return NextResponse.json({ error: "Missing owner or repo" }, { status: 400 });
+    }
+
+    const github = new GitHubService(session.accessToken);
+    const board = await github.updateBoardConfig(owner, repo, updates, branch ?? undefined);
+
+    return NextResponse.json({ board });
+  } catch (error) {
+    console.error("Failed to update board config:", error);
+    return NextResponse.json({ error: "Failed to update board config" }, { status: 500 });
+  }
+}
+
 export async function GET(request: NextRequest) {
   const session = await auth();
 

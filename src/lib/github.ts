@@ -1,5 +1,5 @@
 import { Octokit } from "@octokit/rest";
-import { Task, Board, GitHubContent, Repository } from "./types";
+import { Task, Board, BoardConfig, GitHubContent, Repository, TaskComment } from "./types";
 
 export class GitHubService {
   private octokit: Octokit;
@@ -358,6 +358,58 @@ export class GitHubService {
     }
   }
 
+  async addComment(
+    owner: string,
+    repo: string,
+    taskId: string,
+    comment: TaskComment,
+    branch?: string
+  ): Promise<Task> {
+    const currentTask = await this.getTask(owner, repo, taskId, branch);
+    const updatedComments = [...(currentTask.comments ?? []), comment];
+    return this.updateTask(owner, repo, taskId, { comments: updatedComments }, branch);
+  }
+
+  async updateBoardConfig(
+    owner: string,
+    repo: string,
+    configUpdates: Partial<BoardConfig>,
+    branch?: string
+  ): Promise<Board> {
+    const currentBoard = await this.getBoardConfig(owner, repo, branch);
+    if (!currentBoard) {
+      throw new Error("Board configuration not found");
+    }
+
+    const updatedBoard: Board = {
+      ...currentBoard,
+      config: { ...currentBoard.config, ...configUpdates },
+    };
+
+    const { data: currentFile } = await this.octokit.repos.getContent({
+      owner,
+      repo,
+      path: ".hlavi/board.json",
+      ...(branch && { ref: branch }),
+    });
+
+    if (!("sha" in currentFile)) {
+      throw new Error("Board file not found");
+    }
+
+    await this.octokit.repos.createOrUpdateFileContents({
+      owner,
+      repo,
+      path: ".hlavi/board.json",
+      message: "Update board configuration",
+      content: Buffer.from(JSON.stringify(updatedBoard, null, 2)).toString("base64"),
+      sha: currentFile.sha,
+      ...(branch && { branch }),
+    });
+
+    return updatedBoard;
+  }
+
   async initializeHlavi(owner: string, repo: string, branch?: string): Promise<void> {
     const now = new Date().toISOString();
     const weekFromNow = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
@@ -401,7 +453,69 @@ export class GitHubService {
       blocks: [],
     };
 
-    // Board configuration with the example task
+    // Setup task: configure the Hlavi agent
+    const agentSetupTask: Task = {
+      id: "HLA2",
+      title: "Set up Hlavi Agent",
+      description: `## Hlavi Agent Setup
+
+The Hlavi Agent workflow has been added to your repository at \`.github/workflows/hlavi-agent.yml\`. It will autonomously work on any task with \`autonomous: true\` and \`status: open\`.
+
+To activate it, you need to add an API key for your chosen AI provider as a **repository secret**.
+
+Go to: **Settings → Secrets and variables → Actions → New repository secret**
+
+### Anthropic (Claude) — recommended
+- Secret name: \`ANTHROPIC_API_KEY\`
+- Get your key: https://console.anthropic.com/settings/keys
+- Default model: \`claude-opus-4-6\`
+
+### OpenAI (GPT / o-series)
+- Secret name: \`OPENAI_API_KEY\`
+- Get your key: https://platform.openai.com/api-keys
+- Update \`model\` in the workflow to e.g. \`gpt-4o\`
+
+### Google (Gemini)
+- Secret name: \`GOOGLE_API_KEY\`
+- Get your key: https://aistudio.google.com/app/apikey
+- Update \`model\` in the workflow to e.g. \`gemini-2.0-flash\`
+
+Once a secret is added, the workflow will run every 30 minutes automatically. You can also trigger it manually from the **Actions** tab.`,
+      status: "open",
+      acceptance_criteria: [
+        {
+          id: 1,
+          description: "Choose an AI provider (Anthropic, OpenAI, or Google)",
+          completed: false,
+          created_at: now,
+          completed_at: null,
+        },
+        {
+          id: 2,
+          description: "Add the provider API key as a repository secret (ANTHROPIC_API_KEY, OPENAI_API_KEY, or GOOGLE_API_KEY)",
+          completed: false,
+          created_at: now,
+          completed_at: null,
+        },
+        {
+          id: 3,
+          description: "Trigger the Hlavi Agent workflow manually from the Actions tab to verify it runs successfully",
+          completed: false,
+          created_at: now,
+          completed_at: null,
+        },
+      ],
+      created_at: now,
+      updated_at: now,
+      agent_assigned: false,
+      autonomous: false,
+      rejection_reason: null,
+      start_date: now,
+      end_date: weekFromNow,
+      blocks: [],
+    };
+
+    // Board configuration with both tasks
     const defaultBoard: Board = {
       config: {
         name: "Default Board",
@@ -415,9 +529,74 @@ export class GitHubService {
       },
       tasks: {
         "HLA1": "open",
+        "HLA2": "open",
       },
-      next_task_number: 2,
+      next_task_number: 3,
     };
+
+    // Default agent workflow file
+    const agentWorkflow = `name: Hlavi Agent
+
+on:
+  # Run every 30 minutes
+  schedule:
+    - cron: '*/30 * * * *'
+  # Allow manual trigger with model override from the Actions tab
+  workflow_dispatch:
+    inputs:
+      model:
+        description: 'AI model to use for this run'
+        required: false
+        default: 'claude-opus-4-6'
+        type: choice
+        options:
+          - claude-opus-4-6
+          - claude-sonnet-4-6
+          - claude-haiku-4-5
+          - gpt-4o
+          - gpt-4o-mini
+          - o3
+          - o4-mini
+          - gemini-2.0-flash
+          - gemini-1.5-pro
+      dry_run:
+        description: 'Dry run — log planned actions without writing files or committing'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+permissions:
+  contents: write   # needed to commit task status updates and code changes
+
+jobs:
+  agent:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: \${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run Hlavi Agent
+        uses: mmuhlariholdings/hlavi-agent-action@v1
+        with:
+          # Add your chosen provider's API key as a repository secret.
+          # Only one key is needed — the provider is auto-detected from the model name.
+          anthropic_api_key: \${{ secrets.ANTHROPIC_API_KEY }}
+          # openai_api_key: \${{ secrets.OPENAI_API_KEY }}
+          # google_api_key: \${{ secrets.GOOGLE_API_KEY }}
+
+          model: \${{ inputs.model || 'claude-opus-4-6' }}
+          dry_run: \${{ inputs.dry_run || 'false' }}
+
+          # Optional: cap the number of agentic turns per task
+          # max_iterations: '50'
+`;
 
     try {
       // Check if board.json already exists
@@ -463,7 +642,7 @@ export class GitHubService {
         // File doesn't exist, which is expected for new initialization
       }
 
-      // Create example task
+      // Create example task (HLA1)
       await this.octokit.repos.createOrUpdateFileContents({
         owner,
         repo,
@@ -471,6 +650,60 @@ export class GitHubService {
         message: "Initialize Hlavi: Add example task",
         content: Buffer.from(JSON.stringify(exampleTask, null, 2)).toString("base64"),
         ...(exampleTaskSha && { sha: exampleTaskSha }),
+        ...(branch && { branch }),
+      });
+
+      // Check if agent setup task already exists
+      let agentSetupTaskSha: string | undefined;
+      try {
+        const { data: existingSetupFile } = await this.octokit.repos.getContent({
+          owner,
+          repo,
+          path: ".hlavi/tasks/HLA2.json",
+          ...(branch && { ref: branch }),
+        });
+        if ("sha" in existingSetupFile) {
+          agentSetupTaskSha = existingSetupFile.sha;
+        }
+      } catch (error) {
+        // File doesn't exist, expected
+      }
+
+      // Create agent setup task (HLA2)
+      await this.octokit.repos.createOrUpdateFileContents({
+        owner,
+        repo,
+        path: ".hlavi/tasks/HLA2.json",
+        message: "Initialize Hlavi: Add agent setup task",
+        content: Buffer.from(JSON.stringify(agentSetupTask, null, 2)).toString("base64"),
+        ...(agentSetupTaskSha && { sha: agentSetupTaskSha }),
+        ...(branch && { branch }),
+      });
+
+      // Check if workflow file already exists
+      let workflowFileSha: string | undefined;
+      try {
+        const { data: existingWorkflow } = await this.octokit.repos.getContent({
+          owner,
+          repo,
+          path: ".github/workflows/hlavi-agent.yml",
+          ...(branch && { ref: branch }),
+        });
+        if ("sha" in existingWorkflow) {
+          workflowFileSha = existingWorkflow.sha;
+        }
+      } catch (error) {
+        // File doesn't exist, expected
+      }
+
+      // Create the default agent workflow
+      await this.octokit.repos.createOrUpdateFileContents({
+        owner,
+        repo,
+        path: ".github/workflows/hlavi-agent.yml",
+        message: "Initialize Hlavi: Add agent workflow",
+        content: Buffer.from(agentWorkflow).toString("base64"),
+        ...(workflowFileSha && { sha: workflowFileSha }),
         ...(branch && { branch }),
       });
     } catch (error) {

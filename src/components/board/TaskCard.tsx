@@ -26,7 +26,7 @@ export function TaskCard({ task }: TaskCardProps) {
         <div className="flex items-center gap-1.5">
           {task.autonomous && (
             <span title="Autonomous mode enabled">
-              <Bot className="w-3.5 h-3.5 text-violet-500" />
+              <Bot className="w-5 h-5 text-violet-500" />
             </span>
           )}
           <TaskStatusBadge status={task.status} />

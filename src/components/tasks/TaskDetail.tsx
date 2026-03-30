@@ -34,9 +34,9 @@ const STATUS_OPTIONS: { value: TaskStatus; label: string }[] = [
 
 const MODEL_OPTIONS = [
   { value: "", label: "Board default" },
-  { value: "claude-opus-4-6", label: "Claude Opus 4.6" },
-  { value: "claude-sonnet-4-6", label: "Claude Sonnet 4.6" },
-  { value: "claude-haiku-4-5", label: "Claude Haiku 4.5" },
+  { value: "claude-opus-4-0", label: "Claude Opus 4" },
+  { value: "claude-sonnet-4-0", label: "Claude Sonnet 4" },
+  { value: "claude-3-5-sonnet-20241022", label: "Claude 3.5 Sonnet" },
   { value: "gpt-4o", label: "GPT-4o" },
   { value: "gpt-4o-mini", label: "GPT-4o mini" },
   { value: "o3", label: "o3" },

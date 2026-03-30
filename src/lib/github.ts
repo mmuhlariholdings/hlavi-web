@@ -23,12 +23,12 @@ on:
       model:
         description: 'AI model to use for this run'
         required: false
-        default: 'claude-opus-4-6'
+        default: 'claude-opus-4-0'
         type: choice
         options:
-          - claude-opus-4-6
-          - claude-sonnet-4-6
-          - claude-haiku-4-5
+          - claude-opus-4-0
+          - claude-sonnet-4-0
+          - claude-3-5-sonnet-20241022
           - gpt-4o
           - gpt-4o-mini
           - o3
@@ -68,7 +68,7 @@ jobs:
           openai_api_key: \${{ secrets.OPENAI_API_KEY }}
           google_api_key: \${{ secrets.GOOGLE_API_KEY }}
 
-          model: \${{ inputs.model || 'claude-opus-4-6' }}
+          model: \${{ inputs.model || 'claude-opus-4-0' }}
           dry_run: \${{ inputs.dry_run || 'false' }}
 
           # Optional: cap the number of agentic turns per task
@@ -542,7 +542,7 @@ Go to: **Settings → Secrets and variables → Actions → New repository secre
 ### Anthropic (Claude) — recommended
 - Secret name: \`ANTHROPIC_API_KEY\`
 - Get your key: https://console.anthropic.com/settings/keys
-- Default model: \`claude-opus-4-6\`
+- Default model: \`claude-opus-4-0\`
 
 ### OpenAI (GPT / o-series)
 - Secret name: \`OPENAI_API_KEY\`

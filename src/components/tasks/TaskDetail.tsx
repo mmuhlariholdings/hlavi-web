@@ -68,7 +68,7 @@ export function TaskDetail({ task }: TaskDetailProps) {
   const [editedEffort, setEditedEffort] = useState(
     task.effort != null ? String(task.effort) : ""
   );
-  const [editedAutonomous, setEditedAutonomous] = useState(task.autonomous);
+  const [editedAutonomous, setEditedAutonomous] = useState(task.autonomous ?? false);
   const [editedModel, setEditedModel] = useState(task.model ?? "");
 
   useEffect(() => {
@@ -142,7 +142,7 @@ export function TaskDetail({ task }: TaskDetailProps) {
     setEditedStartDate(task.start_date ? format(new Date(task.start_date), "yyyy-MM-dd") : "");
     setEditedEndDate(task.end_date ? format(new Date(task.end_date), "yyyy-MM-dd") : "");
     setEditedEffort(task.effort != null ? String(task.effort) : "");
-    setEditedAutonomous(task.autonomous);
+    setEditedAutonomous(task.autonomous ?? false);
     setEditedModel(task.model ?? "");
     setIsEditing(false);
   };

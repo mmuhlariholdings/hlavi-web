@@ -1,6 +1,71 @@
 import { Octokit } from "@octokit/rest";
 import { Task, Board, BoardConfig, GitHubContent, Repository, TaskComment } from "./types";
 
+const AGENT_WORKFLOW_PATH = ".github/workflows/hlavi-agent.yml";
+
+const AGENT_WORKFLOW_CONTENT = `name: Hlavi Agent
+
+on:
+  # Run every 30 minutes
+  schedule:
+    - cron: '*/30 * * * *'
+  # Allow manual trigger with model override from the Actions tab
+  workflow_dispatch:
+    inputs:
+      model:
+        description: 'AI model to use for this run'
+        required: false
+        default: 'claude-opus-4-6'
+        type: choice
+        options:
+          - claude-opus-4-6
+          - claude-sonnet-4-6
+          - claude-haiku-4-5
+          - gpt-4o
+          - gpt-4o-mini
+          - o3
+          - o4-mini
+          - gemini-2.0-flash
+          - gemini-1.5-pro
+      dry_run:
+        description: 'Dry run — log planned actions without writing files or committing'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+permissions:
+  contents: write   # needed to commit task status updates and code changes
+
+jobs:
+  agent:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: \${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run Hlavi Agent
+        uses: mmuhlariholdings/hlavi-agent-action@v1
+        with:
+          # Add your chosen provider's API key as a repository secret.
+          # Only one key is needed — the provider is auto-detected from the model name.
+          anthropic_api_key: \${{ secrets.ANTHROPIC_API_KEY }}
+          # openai_api_key: \${{ secrets.OPENAI_API_KEY }}
+          # google_api_key: \${{ secrets.GOOGLE_API_KEY }}
+
+          model: \${{ inputs.model || 'claude-opus-4-6' }}
+          dry_run: \${{ inputs.dry_run || 'false' }}
+
+          # Optional: cap the number of agentic turns per task
+          # max_iterations: '50'
+`;
+
 export class GitHubService {
   private octokit: Octokit;
 
@@ -534,69 +599,6 @@ Once a secret is added, the workflow will run every 30 minutes automatically. Yo
       next_task_number: 3,
     };
 
-    // Default agent workflow file
-    const agentWorkflow = `name: Hlavi Agent
-
-on:
-  # Run every 30 minutes
-  schedule:
-    - cron: '*/30 * * * *'
-  # Allow manual trigger with model override from the Actions tab
-  workflow_dispatch:
-    inputs:
-      model:
-        description: 'AI model to use for this run'
-        required: false
-        default: 'claude-opus-4-6'
-        type: choice
-        options:
-          - claude-opus-4-6
-          - claude-sonnet-4-6
-          - claude-haiku-4-5
-          - gpt-4o
-          - gpt-4o-mini
-          - o3
-          - o4-mini
-          - gemini-2.0-flash
-          - gemini-1.5-pro
-      dry_run:
-        description: 'Dry run — log planned actions without writing files or committing'
-        required: false
-        default: 'false'
-        type: choice
-        options:
-          - 'false'
-          - 'true'
-
-permissions:
-  contents: write   # needed to commit task status updates and code changes
-
-jobs:
-  agent:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          token: \${{ secrets.GITHUB_TOKEN }}
-
-      - name: Run Hlavi Agent
-        uses: mmuhlariholdings/hlavi-agent-action@v1
-        with:
-          # Add your chosen provider's API key as a repository secret.
-          # Only one key is needed — the provider is auto-detected from the model name.
-          anthropic_api_key: \${{ secrets.ANTHROPIC_API_KEY }}
-          # openai_api_key: \${{ secrets.OPENAI_API_KEY }}
-          # google_api_key: \${{ secrets.GOOGLE_API_KEY }}
-
-          model: \${{ inputs.model || 'claude-opus-4-6' }}
-          dry_run: \${{ inputs.dry_run || 'false' }}
-
-          # Optional: cap the number of agentic turns per task
-          # max_iterations: '50'
-`;
 
     try {
       // Check if board.json already exists
@@ -702,7 +704,7 @@ jobs:
         repo,
         path: ".github/workflows/hlavi-agent.yml",
         message: "Initialize Hlavi: Add agent workflow",
-        content: Buffer.from(agentWorkflow).toString("base64"),
+        content: Buffer.from(AGENT_WORKFLOW_CONTENT).toString("base64"),
         ...(workflowFileSha && { sha: workflowFileSha }),
         ...(branch && { branch }),
       });
@@ -710,5 +712,44 @@ jobs:
       console.error("Failed to initialize Hlavi:", error);
       throw new Error("Failed to initialize Hlavi directory structure");
     }
+  }
+
+  async checkAgentWorkflow(owner: string, repo: string, branch?: string): Promise<boolean> {
+    try {
+      await this.octokit.repos.getContent({
+        owner,
+        repo,
+        path: AGENT_WORKFLOW_PATH,
+        ...(branch && { ref: branch }),
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async addAgentWorkflow(owner: string, repo: string, branch?: string): Promise<void> {
+    let sha: string | undefined;
+    try {
+      const { data } = await this.octokit.repos.getContent({
+        owner,
+        repo,
+        path: AGENT_WORKFLOW_PATH,
+        ...(branch && { ref: branch }),
+      });
+      if ("sha" in data) sha = data.sha;
+    } catch {
+      // doesn't exist yet
+    }
+
+    await this.octokit.repos.createOrUpdateFileContents({
+      owner,
+      repo,
+      path: AGENT_WORKFLOW_PATH,
+      message: "Add Hlavi agent workflow",
+      content: Buffer.from(AGENT_WORKFLOW_CONTENT).toString("base64"),
+      ...(sha && { sha }),
+      ...(branch && { branch }),
+    });
   }
 }

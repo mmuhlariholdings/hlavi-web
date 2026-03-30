@@ -2,6 +2,7 @@
 
 import { RepoSelector } from "@/components/dashboard/RepoSelector";
 import { BranchInitializer } from "@/components/dashboard/BranchInitializer";
+import { AgentWorkflowBanner } from "@/components/dashboard/AgentWorkflowBanner";
 import { useRepository } from "@/contexts/RepositoryContext";
 import { useTasks } from "@/hooks/useTasks";
 import { CheckCircle2, Clock, AlertCircle, BarChart3 } from "lucide-react";
@@ -31,6 +32,8 @@ export default function DashboardPage() {
       </div>
 
       <RepoSelector />
+
+      {owner && repo && <AgentWorkflowBanner />}
 
       {owner && repo && (
         <div className="space-y-4 md:space-y-6">

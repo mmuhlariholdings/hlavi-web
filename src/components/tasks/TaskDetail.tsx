@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useSession } from "next-auth/react";
+import { useQueryClient } from "@tanstack/react-query";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Task, TaskStatus } from "@/lib/types";
@@ -15,6 +16,7 @@ import { useAddComment } from "@/hooks/useAddComment";
 import { useRepository } from "@/contexts/RepositoryContext";
 import { useTasks } from "@/hooks/useTasks";
 import { format } from "date-fns";
+import toast from "react-hot-toast";
 
 interface TaskDetailProps {
   task: Task;
@@ -46,6 +48,7 @@ const MODEL_OPTIONS = [
 export function TaskDetail({ task }: TaskDetailProps) {
   const { owner, repo, branch } = useRepository();
   const { data: session } = useSession();
+  const queryClient = useQueryClient();
   const updateTask = useUpdateTask();
   const addCriteria = useAddAcceptanceCriteria();
   const addComment = useAddComment();
@@ -88,6 +91,35 @@ export function TaskDetail({ task }: TaskDetailProps) {
     return t ? `${id}: ${t.title}` : id;
   };
 
+  // Fetch the latest task state and return it. Also updates the query cache so
+  // the board reflects the real status without a full reload.
+  const fetchFreshTask = async (): Promise<Task | null> => {
+    if (!owner || !repo) return null;
+    try {
+      const params = new URLSearchParams({ owner, repo, taskId: task.id, ...(branch && { branch }) });
+      const res = await fetch(`/api/github/tasks?${params}`);
+      if (!res.ok) return null;
+      const data: { task: Task } = await res.json();
+      queryClient.setQueryData(["task", owner, repo, task.id, branch], data);
+      queryClient.setQueryData(["tasks", owner, repo, branch], (old: { tasks: Task[] } | undefined) => {
+        if (!old?.tasks) return old;
+        return { tasks: old.tasks.map((t) => t.id === task.id ? data.task : t) };
+      });
+      return data.task;
+    } catch {
+      return null;
+    }
+  };
+
+  const handleEditClick = async () => {
+    const fresh = await fetchFreshTask();
+    if (fresh?.agent_assigned && fresh?.autonomous) {
+      toast.error("The agent is currently working on this task. Leave a comment to guide it instead.");
+      return;
+    }
+    setIsEditing(true);
+  };
+
   const saveParent = (parentId: string | null) => {
     if (!owner || !repo) return;
     updateTask.mutate({ owner, repo, branch, taskId: task.id, updates: { parent: parentId } });
@@ -111,6 +143,15 @@ export function TaskDetail({ task }: TaskDetailProps) {
 
   const handleSave = async () => {
     if (!owner || !repo) return;
+
+    // Re-check agent status in case it picked up the task while user was editing
+    const fresh = await fetchFreshTask();
+    if (fresh?.agent_assigned && fresh?.autonomous) {
+      toast.error("The agent picked up this task while you were editing. Changes not saved.");
+      setIsEditing(false);
+      return;
+    }
+
     const effortNum = editedEffort.trim() !== "" ? parseInt(editedEffort, 10) : null;
     try {
       await updateTask.mutateAsync({
@@ -223,7 +264,7 @@ export function TaskDetail({ task }: TaskDetailProps) {
 
         {!isEditing && (
           <button
-            onClick={() => setIsEditing(true)}
+            onClick={handleEditClick}
             className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
             title="Edit task"
           >

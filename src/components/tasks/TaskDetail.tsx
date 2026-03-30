@@ -220,7 +220,7 @@ export function TaskDetail({ task }: TaskDetailProps) {
         <h2 className="text-base md:text-lg font-semibold mb-3">Details</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-            <Calendar className="w-8 h-8 text-gray-400 flex-shrink-0" />
+            <Calendar className="w-6 h-6 text-gray-400 flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-xs text-gray-600 mb-0.5">Start Date</p>
               {isEditing ? (
@@ -239,7 +239,7 @@ export function TaskDetail({ task }: TaskDetailProps) {
           </div>
 
           <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-            <Calendar className="w-8 h-8 text-gray-400 flex-shrink-0" />
+            <Calendar className="w-6 h-6 text-gray-400 flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-xs text-gray-600 mb-0.5">End Date</p>
               {isEditing ? (
@@ -258,7 +258,7 @@ export function TaskDetail({ task }: TaskDetailProps) {
           </div>
 
           <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-            <Zap className="w-8 h-8 text-gray-400 flex-shrink-0" />
+            <Zap className="w-6 h-6 text-gray-400 flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-xs text-gray-600 mb-0.5">Effort</p>
               {isEditing ? (
@@ -279,7 +279,7 @@ export function TaskDetail({ task }: TaskDetailProps) {
           </div>
 
           <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg md:col-span-2">
-            <Bot className="w-8 h-8 text-gray-400 flex-shrink-0" />
+            <Bot className="w-6 h-6 text-gray-400 flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-xs text-gray-600 mb-0.5">Autonomous Mode</p>
               {isEditing ? (
@@ -309,16 +309,16 @@ export function TaskDetail({ task }: TaskDetailProps) {
             </div>
           </div>
 
-          <div className="flex items-start gap-2 p-3 bg-gray-50 rounded-lg">
-            <Clock className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
+          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+            <Clock className="w-6 h-6 text-gray-400 flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-xs text-gray-600 mb-0.5">Created</p>
               <p className="text-sm font-medium text-gray-900 break-words">{formatDate(task.created_at)}</p>
             </div>
           </div>
 
-          <div className="flex items-start gap-2 p-3 bg-gray-50 rounded-lg">
-            <Clock className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
+          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+            <Clock className="w-6 h-6 text-gray-400 flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-xs text-gray-600 mb-0.5">Updated</p>
               <p className="text-sm font-medium text-gray-900 break-words">{formatDate(task.updated_at)}</p>

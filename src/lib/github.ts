@@ -158,19 +158,19 @@ export class GitHubService {
 
   async getAllTasks(owner: string, repo: string, branch?: string): Promise<Task[]> {
     const files = await this.getTaskFiles(owner, repo, branch);
-    const tasks: Task[] = [];
 
-    for (const file of files) {
-      const taskId = file.name.replace(".json", "");
-      try {
-        const task = await this.getTask(owner, repo, taskId, branch);
-        tasks.push(task);
-      } catch (error) {
-        console.error(`Failed to fetch task ${taskId}:`, error);
-      }
-    }
+    const results = await Promise.allSettled(
+      files.map(async (file) => {
+        if (!file.download_url) throw new Error(`No download URL for ${file.name}`);
+        const res = await fetch(file.download_url);
+        if (!res.ok) throw new Error(`Failed to fetch ${file.name}: ${res.status}`);
+        return res.json() as Promise<Task>;
+      })
+    );
 
-    return tasks;
+    return results
+      .filter((r): r is PromiseFulfilledResult<Task> => r.status === "fulfilled")
+      .map((r) => r.value);
   }
 
   async getBoardConfig(owner: string, repo: string, branch?: string): Promise<Board | null> {
@@ -743,14 +743,26 @@ Once a secret is added, the workflow will run every 30 minutes automatically. Yo
       // doesn't exist yet
     }
 
-    await this.octokit.repos.createOrUpdateFileContents({
-      owner,
-      repo,
-      path: AGENT_WORKFLOW_PATH,
-      message: "Add Hlavi agent workflow",
-      content: Buffer.from(AGENT_WORKFLOW_CONTENT).toString("base64"),
-      ...(sha && { sha }),
-      ...(branch && { branch }),
-    });
+    try {
+      await this.octokit.repos.createOrUpdateFileContents({
+        owner,
+        repo,
+        path: AGENT_WORKFLOW_PATH,
+        message: "Add Hlavi agent workflow",
+        content: Buffer.from(AGENT_WORKFLOW_CONTENT).toString("base64"),
+        ...(sha && { sha }),
+        ...(branch && { branch }),
+      });
+    } catch (error: unknown) {
+      const status = (error as { status?: number }).status;
+      if (status === 404 || status === 403) {
+        throw new Error(
+          `Insufficient permissions to write to ${owner}/${repo}. ` +
+          `Ensure your GitHub token has write access and, if this is an organization repository, ` +
+          `that the organization has approved the Hlavi OAuth app under Settings → Third-party Access.`
+        );
+      }
+      throw error;
+    }
   }
 }

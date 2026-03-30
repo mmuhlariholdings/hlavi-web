@@ -40,11 +40,12 @@ export function AgentWorkflowBanner() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ owner, repo, branch }),
       });
-      if (!res.ok) throw new Error("Failed to create workflow");
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to create workflow");
       queryClient.setQueryData(["check-workflow", owner, repo, branch], { hasWorkflow: true });
       toast.success("Agent workflow added to .github/workflows/hlavi-agent.yml");
-    } catch {
-      toast.error("Failed to add workflow");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to add workflow");
     } finally {
       setIsPending(false);
     }

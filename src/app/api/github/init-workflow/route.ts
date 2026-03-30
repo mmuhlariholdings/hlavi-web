@@ -21,6 +21,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ message: "Workflow created successfully" });
   } catch (error) {
     console.error("Failed to create workflow:", error);
-    return NextResponse.json({ error: "Failed to create workflow" }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Failed to create workflow";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
